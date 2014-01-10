@@ -3,9 +3,16 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
 <title>Wikipedia Lookup</title>
 </head>
-<body><script type="text/javascript"><!--
+<body>
+    <div id="hello">Hello world!</div>
+<form action="#" method="get" onsubmit="return false">
+<p>Geben Sie ein Wort ein: - <input id="spellcheckinput" onkeyup="getjs (this.value);" type="text"> <span id="spellcheckresult"></span></p>
+</form>
+    <textarea id="input_text" rows="5" cols="55" spellcheck="false"></textarea>
+<script type="text/javascript"><!--
 var spellcheck = function (data) {
 	var found = false;
     var url='';
@@ -23,7 +30,9 @@ var spellcheck = function (data) {
 	}
 
 	if (! found)
-		document.getElementById ('spellcheckresult').innerHTML = '<b style="color:red">Begriff nicht gefunden</b>';
+        document.getElementById ('spellcheckresult').innerHTML = '<b style="color:red">Begriff nicht gefunden</b>';
+    
+    return found;
 };
 
 var getjs = function (value) {
@@ -38,10 +47,19 @@ var getjs = function (value) {
 	elem.setAttribute ('type','text/javascript');
 	document.getElementsByTagName ('head') [0].appendChild (elem);
 };
---></script>
-<form action="#" method="get" onsubmit="return false">
-<p>Geben Sie ein Wort ein: - <input id="spellcheckinput" onkeyup="getjs (this.value);" type="text"> <span id="spellcheckresult"></span></p>
-</form>
+
+var traverse = function(text){
+    
+};
+
+jQuery('textarea#input_text').keyup(function(){
+    console.log(spellcheck(jQuery(this).val()));
+    var found = spellcheck(jQuery(this).val());
+    if(found){
+        alert('hier');
+    }
+});
+</script>
 </body>
 </html>
 
