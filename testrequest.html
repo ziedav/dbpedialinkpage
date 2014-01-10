@@ -4,21 +4,28 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 <title>Wikipedia Lookup</title>
+<script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
 </head>
 <body><script type="text/javascript"><!--
 var searched='';
+var workingon='';
 var wikicheck = function (data) {
+	//In data[0] liegt das angefragte Element
+	//In data[1] liegt das Array mit den gefundenen Begriffen
+	//console.log(data[1]);
 	var found = false;
     var url='';
 	//Ergebnis der Wikianfrage
 	var text = data [0];
 	//Hole die Eingabe
-	var input_text = document.getElementById ('spellcheckinput').value;
+	//var input_text = document.getElementById ('spellcheckinput').value;
+	var input_text = workingon;
 	//Bereinige die Eingabe
 	input_text = input_text.replace(/\s/g, "");
+	//console.log(input_text);
 
-	if (text != input_text)
-		return;
+	//if (text != input_text)
+	//	return;
 
 	for (i=0; i<data [1].length; i++) {
 		//Gehe die Ergebnisliste durch und prüfe ob das Wort genau übereinstimmt
@@ -46,32 +53,55 @@ var wikicheck = function (data) {
 	}
 	
 	//Leere das Eingabefeld
-	document.getElementById ('spellcheckinput').value = '';
+	//document.getElementById ('spellcheckinput').value = '';
 };
 
 var checkavailability = function (value) {
-	if (! value)
-		return;
+	//console.log(value);
+	//if (! value)
+	//	return;
 	//Entferne Leerzeichen
 	value = value.replace(/\s/g, "");
+	//Aktualisiere workingon
+	workingon = value;
 
 	url = 'http://de.wikipedia.org/w/api.php?action=opensearch&search='+value+'&format=json&callback=wikicheck';
-
+	//Connect to wiki
 	var elem = document.createElement ('script');
 	elem.setAttribute ('src', url);
 	elem.setAttribute ('type','text/javascript');
 	document.getElementsByTagName ('head') [0].appendChild (elem);
+	//console.log(document.getElementsByTagName ('head') [0]);
+};
+
+function sleep(miliseconds, status) {
+           var currentTime = new Date().getTime();
+		   //document.getElementById ('statusbar').innerHTML = status;
+           while (currentTime + miliseconds >= new Date().getTime()) {
+           }
+       };
+var splitstrings = function (stringinput) {
+	if (!stringinput)
+		return;
+	var string_splitted = stringinput.split(" ");
+	for (i=0; i<(string_splitted.length);i++) {
+		checkavailability (string_splitted[i]);	
+		//status = (i/string_splitted.length);
+		sleep(0,status);
+		//document.getElementById ('debug').innerHTML = string_splitted[i];
+	}
 };
 --></script>
 <form action="#" method="get" onsubmit="return false">
 <p>Geben Sie ein Wort ein: - 
 	<input id="spellcheckinput" type="text"> 
-	<button name="Start_lookup" onclick="checkavailability (spellcheckinput.value);"><p>Start lookup</p></button>
+	<button name="Start_lookup" onclick="splitstrings (spellcheckinput.value);"><p>Start lookup</p></button>
 	<span id="spellcheckresult"></span>
 </p>
 </form>
+<span id="statusbar">0/100</span><br>
 <span id="resulttext">Hier steht Text</span><br>
-<span id="debug">Debug information</span>
+<span id="debug"></span>
 </body>
 </html>
 
