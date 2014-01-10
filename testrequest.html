@@ -6,33 +6,57 @@
 <title>Wikipedia Lookup</title>
 </head>
 <body><script type="text/javascript"><!--
-var spellcheck = function (data) {
+var searched='';
+var wikicheck = function (data) {
 	var found = false;
     var url='';
+	//Ergebnis der Wikianfrage
 	var text = data [0];
+	//Hole die Eingabe
+	var input_text = document.getElementById ('spellcheckinput').value;
+	//Bereinige die Eingabe
+	input_text = input_text.replace(/\s/g, "");
 
-	if (text != document.getElementById ('spellcheckinput').value)
+	if (text != input_text)
 		return;
 
 	for (i=0; i<data [1].length; i++) {
+		//Gehe die Ergebnisliste durch und prüfe ob das Wort genau übereinstimmt
 		if (text.toLowerCase () == data [1] [i].toLowerCase ()) {
 			found = true;
-            url ='http://de.wikipedia.org/wiki/' + text;
-			document.getElementById ('spellcheckresult').innerHTML = '<b style="color:green">Begriff gefunden</b> - <a target="_new" href="' + url + '">' + text + '</a>';
+			//Pruefe ob erster Buchstabe groß ist, nur dann soll etwas passieren
+			if (text.toLowerCase () != text) {
+				url ='http://de.wikipedia.org/wiki/' + text;
+				//document.getElementById ('spellcheckresult').innerHTML = '<b style="color:green">Begriff gefunden</b> - <a target="_new" href="' + url + '">' + text + '</a>';
+				document.getElementById ('resulttext').innerHTML = searched + '<a target="_new" href="' + url + '">' + text + '</a>';
+				searched = searched + '<a target="_new" href="' + url + '">' + text + '</a>' + ' ';
+			}
+			else {
+				//document.getElementById ('spellcheckresult').innerHTML = '<b style="color:red">Begriff nicht gefunden</b> - ' + text + '';
+				document.getElementById ('resulttext').innerHTML = searched + text + ' ';
+				searched = searched +  text + ' ';
+			}
 		}
 	}
-
-	if (! found)
-		document.getElementById ('spellcheckresult').innerHTML = '<b style="color:red">Begriff nicht gefunden</b>';
+	//Wenn keines der Ergebnisse passt, dann füge den Text unformatiert wieder ein
+	if (! found) {
+		//document.getElementById ('spellcheckresult').innerHTML = '<b style="color:red">Begriff nicht gefunden</b> - ' + text + '';
+		document.getElementById ('resulttext').innerHTML = searched + text + ' ';
+		searched = searched +  text + ' ';
+	}
+	
+	//Leere das Eingabefeld
+	document.getElementById ('spellcheckinput').value = '';
 };
 
-var getjs = function (value) {
+var checkavailability = function (value) {
 	if (! value)
 		return;
+	//Entferne Leerzeichen
+	value = value.replace(/\s/g, "");
 
-	url = 'http://de.wikipedia.org/w/api.php?action=opensearch&search='+value+'&format=json&callback=spellcheck';
+	url = 'http://de.wikipedia.org/w/api.php?action=opensearch&search='+value+'&format=json&callback=wikicheck';
 
-	document.getElementById ('spellcheckresult').innerHTML = 'Überprüfe Verfügbarkeit ...';
 	var elem = document.createElement ('script');
 	elem.setAttribute ('src', url);
 	elem.setAttribute ('type','text/javascript');
@@ -40,8 +64,14 @@ var getjs = function (value) {
 };
 --></script>
 <form action="#" method="get" onsubmit="return false">
-<p>Geben Sie ein Wort ein: - <input id="spellcheckinput" onkeyup="getjs (this.value);" type="text"> <span id="spellcheckresult"></span></p>
+<p>Geben Sie ein Wort ein: - 
+	<input id="spellcheckinput" type="text"> 
+	<button name="Start_lookup" onclick="checkavailability (spellcheckinput.value);"><p>Start lookup</p></button>
+	<span id="spellcheckresult"></span>
+</p>
 </form>
+<span id="resulttext">Hier steht Text</span><br>
+<span id="debug">Debug information</span>
 </body>
 </html>
 
