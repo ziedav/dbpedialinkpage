@@ -101,5 +101,5 @@
 <textarea id="test" name="test" rows="5" cols="55">Hast du Barack Obama, Steve Jobs oder Bill Clinton schon mal getroffen?!</textarea>
 <div id="linked_text"></div>
 <button id="validate_text">validate</button>
-<div></div>
+<div>test commit</div>
 
