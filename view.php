@@ -1,12 +1,3 @@
-
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
-<head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-<title>Wikipedia Lookup</title>
-<script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
-</head>
-<body>
 <script type="text/javascript">
     var searched='';
     var workingon='';
@@ -94,25 +85,7 @@
             sleep(0, status);
             //document.getElementById ('debug').innerHTML = string_splitted[i];
         }
-    };
-
-    function traverse(text){
-        var words = text.split(/\s+/);
-        for(var i in words){
-            checkavailability(words[i], 'linkInput');
-        };
-    };
-    
-    function linkInput(data){
-        console.log(data);
-        var postIds = data[1];
-        for(var i in postIds){
-            var text = postIds[i];
-            var url = 'http://de.wikipedia.org/wiki/' + text;
-            jQuery('body').append('<div><a target="_new" href="' + url + '">' + text + '</a>'+'</div>');
-        }
-    };
-    
+    };  
 </script>
 <form action="#" method="get" onsubmit="return false">
 <p>Geben Sie ein Wort ein: - 
@@ -125,5 +98,7 @@
 <span id="resulttext">Hier steht Text</span></br>
 <textarea id="input_text" name="input_text" rows="5" cols="55" onclick="traverse(input_text.value);">Barack Obama</textarea>
 <span id="debug"></span></br>
-</body>
-</html>
+<textarea id="test" name="test" rows="5" cols="55">Hast du Barack Obama, Steve Jobs oder Bill Clinton schon mal getroffen?!</textarea>
+<div id="linked_text"></div>
+<button id="validate_text">validate</button>
+
