@@ -1,4 +1,4 @@
-
+﻿
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -6,7 +6,23 @@
 <title>Wikipedia Lookup</title>
 <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
 </head>
-<body><script type="text/javascript"><!--
+<body>
+<style type="text/css">
+  div.fsb {
+    border:1px solid #000;
+    background-color:white;
+    width:200px;
+    height:28px;
+    padding:1px;
+  }
+ 
+  div.fortschritt {
+    background-color:#000;
+    height:28px;
+    width:0%; /* Fortschritt */
+  }
+</style>
+<script type="text/javascript"><!--
 var searched='';
 var workingon='';
 var wikicheck = function (data) {
@@ -14,7 +30,7 @@ var wikicheck = function (data) {
 	//In data[1] liegt das Array mit den gefundenen Begriffen
 	//console.log(data[1]);
 	var found = false;
-    var url='';
+    	var url='';
 	//Ergebnis der Wikianfrage
 	var text = data [0];
 	//Hole die Eingabe
@@ -35,12 +51,12 @@ var wikicheck = function (data) {
 			if (text.toLowerCase () != text) {
 				url ='http://de.wikipedia.org/wiki/' + text;
 				//document.getElementById ('spellcheckresult').innerHTML = '<b style="color:green">Begriff gefunden</b> - <a target="_new" href="' + url + '">' + text + '</a>';
-				document.getElementById ('resulttext').innerHTML = searched + '<a target="_new" href="' + url + '">' + text + '</a>';
+				//document.getElementById ('resulttext').innerHTML = searched + '<a target="_new" href="' + url + '">' + text + '</a>';
 				searched = searched + '<a target="_new" href="' + url + '">' + text + '</a>' + ' ';
 			}
 			else {
 				//document.getElementById ('spellcheckresult').innerHTML = '<b style="color:red">Begriff nicht gefunden</b> - ' + text + '';
-				document.getElementById ('resulttext').innerHTML = searched + text + ' ';
+				//document.getElementById ('resulttext').innerHTML = searched + text + ' ';
 				searched = searched +  text + ' ';
 			}
 		}
@@ -48,9 +64,10 @@ var wikicheck = function (data) {
 	//Wenn keines der Ergebnisse passt, dann füge den Text unformatiert wieder ein
 	if (! found) {
 		//document.getElementById ('spellcheckresult').innerHTML = '<b style="color:red">Begriff nicht gefunden</b> - ' + text + '';
-		document.getElementById ('resulttext').innerHTML = searched + text + ' ';
+		//document.getElementById ('resulttext').innerHTML = searched + text + ' ';
 		searched = searched +  text + ' ';
 	}
+	//console.log(searched);
 	
 	//Leere das Eingabefeld
 	//document.getElementById ('spellcheckinput').value = '';
@@ -81,24 +98,49 @@ function sleep(miliseconds, status) {
            }
        };
 var splitstrings = function (stringinput) {
+	var wiki_task = setInterval(function(){run_wiki()},100);
+
 	if (!stringinput)
 		return;
 	var string_splitted = stringinput.split(" ");
-	for (i=0; i<(string_splitted.length);i++) {
-		checkavailability (string_splitted[i]);	
-		//status = (i/string_splitted.length);
-		sleep(0,status);
-		//document.getElementById ('debug').innerHTML = string_splitted[i];
-	}
+	var i = 0;
+	var length = string_splitted.length;
+	function run_wiki() {
+		if (i<length) {
+			checkavailability (string_splitted[i]);
+			var prog = Math.round((i/string_splitted.length)*100);
+			write_progress (prog);
+			document.getElementById('prg_bar').style.width = prog + '%';
+			i=i+1;
+		}
+		else {
+			document.getElementById ('resulttext').innerHTML = searched;
+			clearInterval(wiki_task);
+			write_progress (100);
+		}
+	};
+};
+
+var write_progress = function (progress) {
+	document.getElementById ('statusbar').innerHTML = progress + '/100';
+};
+
+var clearresult = function () {
+	document.getElementById ('resulttext').innerHTML = '';
+	searched = '';
 };
 --></script>
 <form action="#" method="get" onsubmit="return false">
-<p>Geben Sie ein Wort ein: - 
+<p>Geben Sie den Text ein: - 
 	<input id="spellcheckinput" type="text"> 
 	<button name="Start_lookup" onclick="splitstrings (spellcheckinput.value);"><p>Start lookup</p></button>
+	<button name="Clear_result" onclick="clearresult ();"><p>Clear Result</p></button>
 	<span id="spellcheckresult"></span>
 </p>
 </form>
+<div class="fsb">
+  <div class="fortschritt" id ="prg_bar"></div>
+</div>
 <span id="statusbar">0/100</span><br>
 <span id="resulttext">Hier steht Text</span><br>
 <span id="debug"></span>
