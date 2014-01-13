@@ -15,6 +15,16 @@ function linkInput(data){
     }
 };
 
+function eraseDuplictions(arrayString){
+    var uniques = [];
+    for(var i =0; i < arrayString.length; i++){
+        if(uniques.indexOf(arrayString[i]) === -1)
+            uniques.push(arrayString[i]);
+    }
+    
+    return uniques;
+};
+
 var WikiLink = function(destinySelector){
     this.selector = destinySelector;
     this.destiny = jQuery(destinySelector);
@@ -27,23 +37,21 @@ WikiLink.prototype.traverse = function(text){
     var tokens = this.getTokens(text);
     console.log(tokens);
     
-    for(var index in tokens){
-        this.openSearch(tokens[index], 'linker.query');
-        //this.openSearch(tokens[index]);
+    for(var index = 0; index < tokens.length-1; index += 1){
+        this.openSearch(tokens[index]+' '+tokens[index+1], 'linker.query');
+    }
+    
+    var limitedTokens = eraseDuplictions(tokens);
+    console.log(limitedTokens);
+    
+    for(var index = 0; index < limitedTokens.length; index += 1){
+        this.openSearch(limitedTokens[index], 'linker.query');
     }
 };
 
 WikiLink.prototype.getTokens = function(text){
-    //finde alle deutschen Wörter, die mit Großbuchstaben anfangen
-    var words = text.match(/[A-ZÄÖÜ][äöüÄÖÜß\w]+/g);
-    //eliminiere alle Duplikate
-    var tokens = [];
-    for(var i =0; i < words.length; i++){
-        if(tokens.indexOf(words[i]) === -1)
-            tokens.push(words[i]);
-    }
-    
-    return tokens;
+    //finde alle deutschen Wörter, die mit Großbuchstaben anfangen    
+    return text.match(/[A-ZÄÖÜ][äöüÄÖÜß\w]+/g);
 };
 
 WikiLink.prototype.openSearch = function(needle, callback){
@@ -55,6 +63,7 @@ WikiLink.prototype.openSearch = function(needle, callback){
 };
 
 WikiLink.prototype.query = function(response){
+    console.log(response);
     var needle = response[0];
     var results = response[1];
     
@@ -72,10 +81,6 @@ WikiLink.prototype.query = function(response){
 };
 
 WikiLink.prototype.link = function(needle, output){
-    /*console.log('needle: "'+needle+'" || replacer: '+output);
-    var text = this.target.html();
-    text = text.replace(new RegExp(needle, 'g'), output);
-    this.target.html(text);*/
     var textNode;
     var text;
     this.target.contents().each(function(){
@@ -85,7 +90,6 @@ WikiLink.prototype.link = function(needle, output){
             textNode.replaceWith(text);
         }
     });
-    //console.log(this.target.contents());
 };
 
 WikiLink.prototype.listen = function(){
