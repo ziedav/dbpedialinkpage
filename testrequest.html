@@ -1,10 +1,13 @@
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 <title>Wikipedia Lookup</title>
+<link rel="stylesheet" type="text/css" href="css/style.css"></link>
 <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+<script type="text/javascript" src="js/core.js"></script>
+<script type="text/javascript" src="js/linkage.js"></script>
 </head>
 <body>
 <script type="text/javascript">
@@ -125,5 +128,22 @@
 <span id="resulttext">Hier steht Text</span></br>
 <textarea id="input_text" name="input_text" rows="5" cols="55" onclick="traverse(input_text.value);">Barack Obama</textarea>
 <span id="debug"></span></br>
+<textarea id="test" name="test" rows="10" cols="80">Der Untertitel des /(}Buches*+/ „Der Implex“ von Barbara Kirchner und Dietmar
+Dath1 heißt „Sozialer Fortschritt. Begriff und Geschichte“, handelt also von
+Gesellschaftlichem. Bevor Soziologen, Politologen, Philosophen, Ökonomen
+und Historiker sich damit befassen, sollten sie eine Warnung zur Kenntnis
+nehmen, die gleich im ersten Satz steht. Sie lautet:
+„Dieses Buch ist keine wissenschaftliche Monographie, kein Manifest, keine
+philosophische Abhandlung.“
+</textarea></br>
+<button id="validate_text">validate</button>
+<div id="linked_text"></div>
+<script type="text/javascript">
+    var linker = new WikiLink('div#linked_text');
+
+    jQuery(document).ready(function(){
+        linker.listen();
+    });
+</script>
 </body>
 </html>

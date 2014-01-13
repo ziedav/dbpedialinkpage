@@ -96,8 +96,15 @@
 </form>
 <span id="statusbar">0/100</span></br>
 <span id="resulttext">Hier steht Text</span></br>
-<textarea id="input_text" name="input_text" rows="5" cols="55" onclick="traverse(input_text.value);">Barack Obama</textarea>
 <span id="debug"></span></br>
-<textarea id="test" name="test" rows="5" cols="55">Hast du Barack Obama, Steve Jobs oder Bill Clinton schon mal getroffen?!</textarea>
-<div id="linked_text"></div>
+<textarea id="input_text" name="input_text" rows="5" cols="55" onclick="traverse(input_text.value);">Barack Obama</textarea></br>
+<textarea id="test" name="test" rows="10" cols="80">Autorin Autor</textarea></br>
 <button id="validate_text">validate</button>
+<div id="linked_text"></div>
+<script type="text/javascript">
+    var linker = new WikiLink('div#linked_text');
+
+    jQuery(document).ready(function(){
+        linker.listen();
+    });
+</script>
