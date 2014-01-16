@@ -21,6 +21,7 @@
 		<div class="fsb">
 			<div class="fortschritt" id ="prg_bar"></div>
 		</div>
+		<p><b id="prg_status_percent">0</b>/100 (%)</p>
 	</td>
 </tr>
 </table>	

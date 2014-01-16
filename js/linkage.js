@@ -45,6 +45,7 @@ WikiLink.prototype.traverse = function(text){
 	prg_status = 1;
 	prg_length_1 = tokens.length;
 	prg_programmpart = 0;
+	document.getElementById('prg_bar').innerHTML = '';
     
     for(var index = 0; index < tokens.length-1; index += 1){
         this.openSearch(tokens[index]+' '+tokens[index+1], 'linker.query');
@@ -109,7 +110,13 @@ WikiLink.prototype.link = function(needle, output){
 	prg_status = prg_status + 1;
 	var progress = (prg_status/prg_length)*100;
 	document.getElementById('prg_bar').style.width = progress + '%';
+	document.getElementById('prg_status_percent').innerHTML = Round2Dec(progress);
 	console.log("Fortschritt : " + progress + "  und Status : " + prg_status + "  und Länge: " + prg_length);
+	if (progress >= 99.99) {
+		document.getElementById('prg_status_percent').innerHTML = 'FINISHED';
+		document.getElementById('prg_bar').style.width = '0%';
+		document.getElementById('prg_bar').innerHTML = 'FINISHED';
+	}
 	//PG Bar Stop
 };
 
@@ -122,4 +129,9 @@ WikiLink.prototype.listen = function(){
         target.html(test.val());
         that.traverse(jQuery('#test').val());
     });
+};
+
+function Round2Dec(x) { 
+	result = Math.round(x * 100) / 100 ; 
+	return result; 
 };
