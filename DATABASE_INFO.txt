@@ -1,0 +1,12 @@
+database : linkpage
+
+CREATE TABLE IF NOT EXISTS `admins` (
+  `id` int(4) NOT NULL AUTO_INCREMENT,
+  `vorname` varchar(20) NOT NULL,
+  `nachname` varchar(20) NOT NULL,
+  `benutzername` varchar(16) DEFAULT NULL,
+  `password` char(50) DEFAULT NULL,
+  `email` varchar(20) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `benutzername` (`benutzername`)
+)
