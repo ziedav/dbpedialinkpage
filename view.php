@@ -137,6 +137,10 @@ Satz lautet: „Die Menschen müssen ihre Maschinen befreien, damit die sich
 revanchieren können.“
 Barack Obama Bill Clinton Angela Merkel</textarea></br>
 <button id="validate_text">validate</button>
+<div class="fsb">
+  <div class="fortschritt" id ="prg_bar"></div>
+</div>
+<span id="statusbar">0/100</span><br>
 <div id="linked_text"></div>
 <script type="text/javascript">
     var linker = new WikiLink('div#linked_text');

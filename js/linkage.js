@@ -25,6 +25,10 @@ function eraseDuplictions(arrayString){
     return uniques;
 };
 
+var ProgressBar = function(){
+    
+};
+
 var WikiLink = function(destinySelector){
     this.selector = destinySelector;
     this.destiny = jQuery(destinySelector);

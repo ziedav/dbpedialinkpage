@@ -6,3 +6,17 @@
     border: 1px solid #e2e2e2;
     border-radius: 2px;
 }
+
+div.fsb {
+    border:1px solid #000;
+    background-color:white;
+    width:200px;
+    height:28px;
+    padding:1px;
+}
+
+div.fortschritt {
+    background-color:#000;
+    height:28px;
+    width:0%; /* Fortschritt */
+}
