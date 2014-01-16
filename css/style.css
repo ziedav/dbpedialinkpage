@@ -1,0 +1,21 @@
+#linked_text{
+    width: 600px;
+	height: 320px;
+    margin: 0;
+    margin-left: 5px;
+    padding: 5px;
+	overflow:auto;
+}
+div.fsb {
+    border:1px solid #000;
+    background-color:white;
+    width:200px;
+    height:28px;
+    padding:1px;
+  }
+ 
+div.fortschritt {
+    background-color:#000;
+    height:28px;
+    width:0%; /* Fortschritt */
+  }
