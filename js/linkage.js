@@ -1,3 +1,4 @@
+//wtf
 function traverse(text){
     var words = text.split(/\s+/);
     for(var i in words){
