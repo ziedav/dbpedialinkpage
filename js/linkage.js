@@ -162,14 +162,13 @@ WikiLink.prototype.replace = function(needle, replace){
 
 WikiLink.prototype.pushOpenSearchToWikiBox = function(data){
     var results = data[1];
+    
+    for(var index in results){
+        results[index] = '<div><a target="_new" href="http://de.wikipedia.org/wiki/'+results[index]+'">'+results[index]+'</a></div>';
+    }
     wikiBox.empty().pushAll(results);
     jQuery('ul#wiki_box_list').empty();
     wikiBox.display();
-    //wikiBox.
-    /*
-       var url = 'http://de.wikipedia.org/wiki/' + text;
-       jQuery('body').append('<div><a target="_new" href="' + url + '">' + text + '</a>'+'</div>');
-    }*/
 };
 
 /**

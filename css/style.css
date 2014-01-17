@@ -27,3 +27,31 @@ div#content{
 div.wiki_box_destiny{
     height: 200px;
 }
+
+[id$='_list']{
+    margin: 0;
+    padding: 5px;
+    border: 1px solid #e2e2e2;
+    border-radius: 2px;
+}
+
+ul[id$='_list']{
+    list-style-type: none;
+}
+
+[id$='_list_item']{
+    display: inline-block;
+    padding: 4px 5px 3px 5px;
+    border: 1px solid #e2e2e2;
+    border-radius: 2px;
+    margin: 5px;
+}
+
+ul[id$='_list'] li div{
+    display: inline-block;
+    padding: 4px 5px 3px 5px;
+}
+
+ul#wiki_box_list{
+    width: 900px;
+}

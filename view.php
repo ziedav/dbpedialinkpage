@@ -28,6 +28,7 @@
     </table>
 </div>
 <div class="wiki_box_destiny">
+    <div>Open-Search</div>
     <input type="text" id="wiki_box_input"></input>
 </div>
 <footer>Web Technologien - Mini Projekt Linkpage - WS 13/14  <a href="login.html" >.</a></footer>
@@ -40,7 +41,6 @@
         linker.listen();
         
         //wiki_box on development
-        var results;
         wikiBox.bindTo(jQuery('.wiki_box_destiny'), 'append');
         var wikiBoxInput = jQuery('input#wiki_box_input');
         
