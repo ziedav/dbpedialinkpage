@@ -26,11 +26,10 @@
 </tr>
 </table>	
 <footer>Web Technologien - Mini Projekt Linkpage - WS 13/14  <a href="login.html" >.</a></footer>
-<!--<textarea id="test" name="test" rows="10" cols="80"></textarea></br>-->
-<!--<div id="linked_text"></div>-->
 <script type="text/javascript">
-    var linker = new WikiLink('div#linked_text');
 
+    var linker = new WikiLink('#test','#linked_text');
+    
     jQuery(document).ready(function(){
         linker.listen();
     });
