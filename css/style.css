@@ -19,3 +19,11 @@ div.fortschritt {
     height:28px;
     width:0%; /* Fortschritt */
   }
+  
+div#content{
+    
+}
+
+div.wiki_box_destiny{
+    height: 200px;
+}

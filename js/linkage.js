@@ -1,13 +1,3 @@
-function linkInput(data){
-    console.log(data);
-    var postIds = data[1];
-    for(var i in postIds){
-        var text = postIds[i];
-        var url = 'http://de.wikipedia.org/wiki/' + text;
-        jQuery('body').append('<div><a target="_new" href="' + url + '">' + text + '</a>'+'</div>');
-    }
-};
-
 //Hier ist alles nötige für die Progressbar
 var prg_length_1 = 0;
 var prg_length_2 = 0;
@@ -168,6 +158,18 @@ WikiLink.prototype.replace = function(needle, replace){
         document.getElementById('prg_bar').innerHTML = 'FINISHED';
     }
     //PG Bar Stop
+};
+
+WikiLink.prototype.pushOpenSearchToWikiBox = function(data){
+    var results = data[1];
+    wikiBox.empty().pushAll(results);
+    jQuery('ul#wiki_box_list').empty();
+    wikiBox.display();
+    //wikiBox.
+    /*
+       var url = 'http://de.wikipedia.org/wiki/' + text;
+       jQuery('body').append('<div><a target="_new" href="' + url + '">' + text + '</a>'+'</div>');
+    }*/
 };
 
 /**

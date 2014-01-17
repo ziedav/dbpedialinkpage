@@ -62,6 +62,8 @@ List.prototype.items = null;
 
 List.prototype.empty = function(){
     this.items.length = 0;
+    
+    return this;
 };
 
 List.prototype.push = function(item){
@@ -72,10 +74,14 @@ List.prototype.pushAll = function(items){
     for(var i=0; i < items.length; i += 1){
         this.push(items[i]);
     }
+    
+    return this;
 };
 
 List.prototype.remove = function(index){
     this.items.splice(index, 1);
+    
+    return this;
 };
 
 var View = function(attrViews){
