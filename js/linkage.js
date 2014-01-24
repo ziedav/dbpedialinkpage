@@ -189,3 +189,57 @@ function Round2Dec(x) {
 	result = Math.round(x * 100) / 100 ; 
 	return result; 
 };
+
+/**
+ * Crawler stellt Funktion für das Traversieren der Webseite der übergebenen Url bereit.
+ * Und übergibt die gefundenen Text-Nodes an WikiLink.
+ * 
+ * @param {String} sourceSelector
+ * @param {String} triggerSelector
+ * @param {String} controller directory von PHP-controller der bei einer ajax-Anfrage aufgerufen wird
+ */
+
+var Crawler = function(sourceSelector, triggerSelector){
+    this.source = jQuery(sourceSelector);
+    this.trigger = jQuery(triggerSelector);
+    this.destiny = jQuery('div#website_text');
+    this.controllerPath = '\controller.php';
+};
+
+Crawler.prototype.crawl = function(url){
+    var that = this;
+    var list = this.list;
+   
+    var data = {
+        task : 'crawl',
+        url : url
+    };
+
+    jQuery.ajax({
+        url: that.controllerPath,
+        data: data,
+        type: 'get',
+        success: 
+                function(textNodes){
+                    //console.log(textNodes);
+                    that.display(JSON.parse(textNodes));
+                }
+    });
+};
+
+Crawler.prototype.display = function(textNodes){
+    var text;
+    for(var index in textNodes){
+        text =  textNodes[index].text;
+        this.destiny.append('<p>'+text+'</p>');
+    }
+};
+
+Crawler.prototype.listen = function(){
+    var that = this;
+    
+    this.trigger.click(function(){
+        var url = that.source.val();
+        that.crawl(url);
+    });
+};

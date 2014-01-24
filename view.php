@@ -1,4 +1,3 @@
-<link rel="stylesheet" type="text/css" href="css/style.css" />
 <div id="content">
     <h1>Wikipedia Linkpage</h1>
     <a href="http://www.wikipedia.de" target="_blank">	 		
@@ -31,21 +30,28 @@
     <div>Open-Search</div>
     <input type="text" id="wiki_box_input"></input>
 </div>
+<div>
+    <input type="text" id="url_input"></input>
+    <button id="crawl_by_url">crawl website</button>
+    <div id="website_text"></div>
+</div>
 <footer>Web Technologien - Mini Projekt Linkpage - WS 13/14  <a href="login.html" >.</a></footer>
 <script type="text/javascript">
-
     var linker = new WikiLink('#test','#linked_text');
-    var wikiBox = ViewFactory('list', 'wiki_box', 'ul'); 
-    console.log(wikiBox);
+    var wikiBox = ViewFactory('list', 'wiki_box', 'ul');
+    var controller = '<?php echo __ROOT__.'\controller.php';?>';
+    var crawler = new Crawler('input#url_input', 'button#crawl_by_url', controller);
+    
     jQuery(document).ready(function(){
         linker.listen();
-        
-        //wiki_box on development
+        //wiki_box listeners on development
         wikiBox.bindTo(jQuery('.wiki_box_destiny'), 'append');
         var wikiBoxInput = jQuery('input#wiki_box_input');
         
         wikiBoxInput.change(function(){
             linker.openSearch(wikiBoxInput.val(), 'linker.pushOpenSearchToWikiBox');
         });
+        //wiki_box end
+        crawler.listen();
     });
 </script>

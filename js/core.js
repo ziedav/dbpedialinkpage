@@ -12,17 +12,21 @@ Tag = function(tag, id, cssClass){
     this.tag = tag;
     this.id = id;
     this.cssClass = cssClass;
+    this.attributes = {};
 };
 
 Tag.prototype.tag = '';
 Tag.prototype.id = '';
 Tag.prototype.cssClass = '';
+Tag.prototype.attributes = {};
 
-Tag.prototype.toHtml = function(content){
-    var html = '<'+this.tag+' id="'+this.id+'"';
+Tag.prototype.toHtml = function(content, tagAttributes){
+    var html = '<'+this.tag+' id="'+this.id+'"'+this.toAttributes(tagAttributes);
+    
     if(typeof this.cssClass !== 'undefined')
         html += ' class="'+this.cssClass+'"';
     html += '>';
+    
     if(typeof content !== 'undefined'){
         if(typeof this.view !== 'undefined'){
             html += this.view.show(content);
@@ -33,6 +37,17 @@ Tag.prototype.toHtml = function(content){
     html += '</'+this.tag+'>'; 
     
     return html;
+};
+
+Tag.prototype.toAttributes = function(attributes){
+    var attrStr = '';
+    if(typeof attributes === 'object'){
+        for(var entry in attributes){
+            attrStr += ' data-'+entry+'="'+attributes[entry]+'"';
+        }
+    }
+    
+    return attrStr;
 };
 
 Tag.prototype.getSelector = function(){
@@ -68,6 +83,7 @@ List.prototype.empty = function(){
 
 List.prototype.push = function(item){
     this.items.push(item);
+    return this;
 };
 
 List.prototype.pushAll = function(items){
@@ -142,7 +158,7 @@ ViewList.prototype.display = function(start, end){
         end = this.items.length;
     }
     var wrapper = this.frame.getQuery();
-    console.log(start);
+    
     for(var i = start; i < end; i += 1){
         wrapper.append(this.item.toHtml(this.items[i]));
     }

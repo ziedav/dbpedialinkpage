@@ -55,3 +55,7 @@ ul[id$='_list'] li div{
 ul#wiki_box_list{
     width: 900px;
 }
+
+div#website_text{
+    height: 900px;
+}
