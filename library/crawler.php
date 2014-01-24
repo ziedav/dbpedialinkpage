@@ -11,7 +11,7 @@
 		 * 
 		 * @return DOMDocument
 		 */
-		public function getPageDocument($url, $name) {
+		public function getPageDocument($url, $name = '') {
 			return Page::factory($url, $name)->removeScripts()->removeTags('img', true)->factoryDocument()->getDocument();
 		}
     }

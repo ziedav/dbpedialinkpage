@@ -202,7 +202,7 @@ var Crawler = function(sourceSelector, triggerSelector){
     this.source = jQuery(sourceSelector);
     this.trigger = jQuery(triggerSelector);
     this.destiny = jQuery('div#website_text');
-    this.controllerPath = '\controller.php';
+    this.controllerPath = '/controller.php';
 };
 
 Crawler.prototype.crawl = function(url){
