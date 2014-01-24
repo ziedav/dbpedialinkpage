@@ -196,7 +196,6 @@ function Round2Dec(x) {
  * 
  * @param {String} sourceSelector
  * @param {String} triggerSelector
- * @param {String} controller directory von PHP-controller der bei einer ajax-Anfrage aufgerufen wird
  */
 
 var Crawler = function(sourceSelector, triggerSelector){
@@ -221,7 +220,8 @@ Crawler.prototype.crawl = function(url){
         type: 'get',
         success: 
                 function(textNodes){
-                    //console.log(textNodes);
+                    console.log(textNodes);
+                    that.destiny.empty();
                     that.display(JSON.parse(textNodes));
                 }
     });

@@ -39,8 +39,7 @@
 <script type="text/javascript">
     var linker = new WikiLink('#test','#linked_text');
     var wikiBox = ViewFactory('list', 'wiki_box', 'ul');
-    var controller = '<?php echo __ROOT__.'\controller.php';?>';
-    var crawler = new Crawler('input#url_input', 'button#crawl_by_url', controller);
+    var crawler = new Crawler('input#url_input', 'button#crawl_by_url');
     
     jQuery(document).ready(function(){
         linker.listen();
