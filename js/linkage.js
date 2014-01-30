@@ -204,12 +204,14 @@ function Round2Dec(x) {
  * 
  * @param {String} sourceSelector
  * @param {String} triggerSelector
+ * @param {String} destinySelector
  */
 
-var Crawler = function(sourceSelector, triggerSelector){    
+var Crawler = function(sourceSelector, triggerSelector, destinySelector){    
     this.source = jQuery(sourceSelector);
     this.trigger = jQuery(triggerSelector);
-    this.destiny = jQuery('div#website_text');
+    this.destiny = jQuery(destinySelector);
+    
     this.controllerPath = '/controller.php';
 };
 
@@ -262,6 +264,17 @@ Cacher.prototype.copyMemory = function(){
     return new Array(Cacher.prototype.memory);
 };
      
+var Editor = function(editorSelector){
+    this.editor = jQuery(editorSelector);
+};
 
-//eraseDuplictions
+Editor.prototype.listen = function(){
+    var that = this;
+    
+    var editor = this.editor;
+    
+    editor.click(function(){
+        alert('editor');
+    });
+};
 
