@@ -1,16 +1,16 @@
 <?php
 //Konfiguration laden
-include("config.php"); 
+include("config_login.php"); 
 
-if(!empty($_POST['benutzername']) && !empty($_POST['password']) && !empty($_POST['vorname']) && !empty($_POST['nachname']) 
+if(!empty($_POST['vorname']) && !empty($_POST['nachname']) && !empty($_POST['benutzer']) && !empty($_POST['password']) 
 && !empty($_POST['email'])){
 // Prüfe ob ales eingegeben wurde
 $first_name= mysql_real_escape_string($_POST['vorname']);
 $last_name= mysql_real_escape_string($_POST['nachname']);
-$user = mysql_real_escape_string(stripslashes($_POST['benutzername']));
+$user = mysql_real_escape_string(stripslashes($_POST['benutzer']));
 $password = mysql_real_escape_string(stripslashes(md5($_POST['password'])));
 $mail = mysql_real_escape_string($_POST['email']);
-$check = "SELECT * from admins where benutzername = '".$user."'";
+$check = "SELECT * from personen where benutzer = '".$user."'";
 $qry = mysql_query($check);
 $num_rows = mysql_num_rows($qry); 
 
@@ -23,10 +23,10 @@ exit;
 }
 
 // Now inserting record in database.
-$query = "INSERT INTO admins (vorname,nachname,benutzername,password,email) VALUES ('".$first_name."','".$last_name."','".$user."','".$password."','".$mail."');";
+$query = "INSERT INTO personen (vorname,nachname,benutzer,passwort,email,createDate) VALUES ('".$first_name."','".$last_name."','".$user."','".$password."','".$mail."',NOW());";
 mysql_query($query);
-echo "Danke f&uuml;r Ihre Registrierung";
-echo '<a href="login.php">Hier klicken</a> um sich nun einzuloggen.';
+echo "Danke f&uuml;r Ihre Registrierung<br/>";
+echo '<a href="index.php">Hier klicken </a> um zur Startseite zur&uuml;ckzugehen';
 exit;
 }
 
@@ -53,7 +53,7 @@ exit;
   
     <tr>
       <td>Benutzername:</td>
-      <td> <input type="text" name="benutzername" size="20" placeholder="Benutzername"><span class="required">*</span></td>
+      <td> <input type="text" name="benutzer" size="20" placeholder="Benutzername"><span class="required">*</span></td>
     </tr>
              
     <tr>
@@ -63,7 +63,7 @@ exit;
      
   <tr>
       <td>Email:</td>
-      <td> <input type="text" name="email" size="20" placeholder="Email"><span class="required">*</span></td>
+      <td> <input type="email" name="email" size="20" placeholder="Email"><span class="required">*</span></td>
     </tr>
   <tr>
        <td><input type="submit" value="Sign Up" class="btn btn-large btn-primary"></td>
