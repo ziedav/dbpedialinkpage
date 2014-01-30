@@ -17,6 +17,7 @@
     }
     
     class WikiCrawler extends Crawler{
+        private static $htmlEntitiesToAvoid = ['&nbsp;'];
         
         public function __construct() {
             parent::__construct();
@@ -24,16 +25,23 @@
         
         public function getTextNodes($doc, $minLength = 200){
             $path = new DOMXpath($doc);
-            $textNodes = $path->query('//text()');
-            $result = [];
-            
+            //$textNodes = $path->query('//text()');
+            $textNodes = $path->query('//body//p');
+            $result = array();
             foreach ($textNodes as $node){
-                if($node->length >= $minLength){
-                    $result[] = utf8_decode($node->textContent);
+                if(strlen($node->nodeValue) >= $minLength){
+                    //$result[] = $this->decode($node->nodeValue);
+                    $result[] = $node->nodeValue;
                 }
             }
-            //print_r($result);exit;
+            
             return $result;
+        }
+        
+        private function decode($str){
+            $str = html_entity_decode(str_replace(WikiCrawler::$htmlEntitiesToAvoid, '', htmlentities($str)));
+            //return mb_convert_encoding($str, 'ISO-8859-1', mb_detect_encoding($str));
+            return utf8_decode($str);
         }
         
         public function serialize($textNodes){

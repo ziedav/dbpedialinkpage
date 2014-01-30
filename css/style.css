@@ -57,5 +57,7 @@ ul#wiki_box_list{
 }
 
 div#website_text{
-    height: 900px;
+    width: 500px;
+    min-height: 900px;
+    margin-left: 150px;
 }

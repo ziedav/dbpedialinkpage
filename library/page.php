@@ -76,7 +76,7 @@
 		 */
 		public function factoryDocument(){
 			$doc = new DOMDocument();
-			@$doc->loadHTML($this->fragment);
+            @$doc->loadHTML($this->fragment);
 			$this->document = $doc;
 			return $this;
 		}

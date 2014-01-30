@@ -23,6 +23,8 @@ function eraseDuplictions(arrayString){
  * @returns {WikiLink}
  */
 var WikiLink = function(sourceSelector, targetSelector){
+    this.cacher = new Cacher();
+    
     this.source = jQuery(sourceSelector);
     this.target = jQuery(targetSelector);
     this.head = jQuery('head');
@@ -36,8 +38,9 @@ var WikiLink = function(sourceSelector, targetSelector){
  * @returns {undefined}
  */
 WikiLink.prototype.traverse = function(text){
+    console.log(text);
     var tokens = this.getTokens(text);
-
+    
     prg_status = 1;
 	prg_length_1 = tokens.length;
 	prg_programmpart = 0;
@@ -112,6 +115,7 @@ WikiLink.prototype.identicalApplication = function(response){
     
     if(index !== results.length){       //falls ein identischer Treffer existiert
         var link = '<a target="_new" href="http://de.wikipedia.org/wiki/'+results[index]+'">'+results[index]+'</a>';
+        
         this.replace(needle, link);  //verlinke den Zieltext
     } else {
         //Progress Bar
@@ -179,10 +183,14 @@ WikiLink.prototype.listen = function(){
     var that = this;
     
     jQuery(document).on('click', 'button#validate_text', function(){
-        var text = that.source.val();   //den zu verlinkenden Text extrahieren
-        that.target.html(text);         //füge den rohen Text in die Vorschau ein
-        that.traverse(text);            //verlinke den Vorschautext bezüglich seine Treffer aus der opensearch 
+         that.link();
     });
+};
+
+WikiLink.prototype.link = function(){
+    var text = this.source.val(); //jQuery('#website_text);//  //den zu verlinkenden Text extrahieren
+    this.target.html(text);         //füge den rohen Text in die Vorschau ein
+    this.traverse(text);            //verlinke den Vorschautext bezüglich seine Treffer aus der opensearch
 };
 
 function Round2Dec(x) { 
@@ -198,7 +206,7 @@ function Round2Dec(x) {
  * @param {String} triggerSelector
  */
 
-var Crawler = function(sourceSelector, triggerSelector){
+var Crawler = function(sourceSelector, triggerSelector){    
     this.source = jQuery(sourceSelector);
     this.trigger = jQuery(triggerSelector);
     this.destiny = jQuery('div#website_text');
@@ -243,3 +251,17 @@ Crawler.prototype.listen = function(){
         that.crawl(url);
     });
 };
+
+var Cacher = function(){
+    Cacher.prototype.memory.push('test');
+};
+
+Cacher.prototype.memory = new Array();
+
+Cacher.prototype.copyMemory = function(){
+    return new Array(Cacher.prototype.memory);
+};
+     
+
+//eraseDuplictions
+

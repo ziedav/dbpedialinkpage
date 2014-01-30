@@ -31,13 +31,15 @@
     <input type="text" id="wiki_box_input"></input>
 </div>
 <div>
-    <input type="text" id="url_input"></input>
+    <input type="text" id="url_input" value="http://www.faz.net/aktuell/feuilleton/ukraine-dieses-drehbuch-schrieb-ein-irrer-12775449.html"></input>
     <button id="crawl_by_url">crawl website</button>
     <div id="website_text"></div>
 </div>
 <footer>Web Technologien - Mini Projekt Linkpage - WS 13/14  <a href="login.html" >.</a></footer>
 <script type="text/javascript">
-    var linker = new WikiLink('#test','#linked_text');
+    //var linker = new WikiLink('#test','#linked_text');
+    var linker = new WikiLink('#website_text','#website_text');
+    
     var wikiBox = ViewFactory('list', 'wiki_box', 'ul');
     var crawler = new Crawler('input#url_input', 'button#crawl_by_url');
     
