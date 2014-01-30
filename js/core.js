@@ -12,10 +12,7 @@ Tag = function(tag, id, cssClass){
     this.tag = tag;
     this.id = id;
     this.cssClass = cssClass;
-<<<<<<< HEAD
     this.attributes = {};
-=======
->>>>>>> origin
 };
 
 Tag.prototype.tag = '';
