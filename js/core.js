@@ -12,7 +12,10 @@ Tag = function(tag, id, cssClass){
     this.tag = tag;
     this.id = id;
     this.cssClass = cssClass;
+<<<<<<< HEAD
     this.attributes = {};
+=======
+>>>>>>> origin
 };
 
 Tag.prototype.tag = '';
@@ -26,7 +29,7 @@ Tag.prototype.toHtml = function(content, tagAttributes){
     if(typeof this.cssClass !== 'undefined')
         html += ' class="'+this.cssClass+'"';
     html += '>';
-    
+
     if(typeof content !== 'undefined'){
         if(typeof this.view !== 'undefined'){
             html += this.view.show(content);
@@ -77,7 +80,6 @@ List.prototype.items = null;
 
 List.prototype.empty = function(){
     this.items.length = 0;
-    
     return this;
 };
 
@@ -90,13 +92,11 @@ List.prototype.pushAll = function(items){
     for(var i=0; i < items.length; i += 1){
         this.push(items[i]);
     }
-    
     return this;
 };
 
 List.prototype.remove = function(index){
     this.items.splice(index, 1);
-    
     return this;
 };
 

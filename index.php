@@ -13,7 +13,7 @@
     </head>
     <body>
     <?php
-        include_once (__ROOT__.'\view.php');
+        include_once (__ROOT__.'\view.php'); 
     ?>
     </body>
 </html>
