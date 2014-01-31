@@ -1,19 +1,3 @@
-//Hier ist alles nötige für die Progressbar
-var prg_length_1 = 0;
-var prg_length_2 = 0;
-var prg_length = 0;
-var prg_status = 0;
-//Ende Progressbar
-
-function eraseDuplictions(arrayString){
-    var uniques = [];
-    for(var i =0; i < arrayString.length; i++){
-        if(uniques.indexOf(arrayString[i]) === -1)
-            uniques.push(arrayString[i]);
-    }
-    return uniques;
-};
-
 /**
  * Wikilink verwaltet Anfragen zu Wikipedia, bereitet den zu verlinkenden Text auf 
  * und fügt in die Vorschau ein.
@@ -22,61 +6,168 @@ function eraseDuplictions(arrayString){
  * @param {String} targetSelector : der CSS-Selector, für das DOM-Objekt, das den verlinkten Text empfängt
  * @returns {WikiLink}
  */
-var WikiLink = function(sourceSelector, targetSelector){
-    this.cacher = new Cacher();
-    
-    this.source = jQuery(sourceSelector);
-    this.target = jQuery(targetSelector);
+var WikiLink = function(sourceSelector, targetSelector){    
+    this.sourceSelector = sourceSelector;
+    this.targetSelector = targetSelector;
     this.head = jQuery('head');
+    
+    this.controllerPath = '/controller.php';;
 };
 
 /**
  * Traversiert den zu verlinkenden Text, um alle identischen 
- * Treffer aus der OpenSearch-Wikipedia zu verlinken. 
+ * Treffer aus der OpenSearch-Wikipedia zu verlinken, wobei
+ * zuerst die Datenbank nach den Begriffen abgefragt wird. 
  * 
  * @param {String} text ist der zu verlinkende Text
  * @returns {undefined}
  */
 WikiLink.prototype.traverse = function(text){
-    console.log(text);
     var tokens = this.getTokens(text);
     
-    prg_status = 1;
-	prg_length_1 = tokens.length;
-	prg_programmpart = 0;
-	document.getElementById('prg_bar').innerHTML = '';
+    /*for(var index in tokens){
+        this.lookUp(tokens[index], 'linker.identicalApplication');
+    }*/
     
-    //wikipedia nach zwei aufeinander folgenden Wörtern suchen
-    //im zuverlinkenden Text zu Wikipedia verlinken
-    //Wichtig!!!: linker ist eine WikiLink-Instanz mit dem Namen 'linker', deren Existent vorauszusetzt wird 
-    for(var index = 0; index < tokens.length-1; index += 1){
-        this.openSearch(tokens[index]+' '+tokens[index+1], 'linker.identicalApplication');
-		//progress = (index/length) * 50;
-		//document.getElementById('prg_bar').style.width = progress + '%';
-    }
+    var that = this;
+    this.lookUpTokens(tokens, function(unReferencedTokens){
+        var needle;
+        for(var index in unReferencedTokens){
+            needle = unReferencedTokens[index];
+            that.openSearch(needle, 'linker.identicalApplication');
+        }
+    });
+};
+
+/**
+ * lookUp bearbeitet nur eine Suchnadel
+ *  
+ * @param {String} needle
+ * @param {handler} requestHandler
+ */
+WikiLink.prototype.lookUp = function(needle, requestHandler){
+    var that = this;
     
-    //alle Mehrfachauftreten im Tokenstrom eliminieren 
-    var limitedTokens = eraseDuplictions(tokens);
-	prg_length_2 = limitedTokens.length;
-	prg_length = prg_length_1 + prg_length_2;
-    //console.log(limitedTokens);
+    var data = {
+        task : 'get_word',
+        word : needle
+    };
     
-    for(var index = 0; index < limitedTokens.length; index += 1){
-        this.openSearch(limitedTokens[index], 'linker.identicalApplication');
-		//progress = 50 + ((index/length) * 50);
-		//document.getElementById('prg_bar').style.width = progress + '%';
-    }
+    jQuery.ajax({
+        url: that.controllerPath,
+        data: data,
+        type: 'get',
+        success: 
+                function(href){
+                    if(href !== ''){
+                        that.replace(needle, that.hrefToLink(href, needle));
+                    } else {
+                        that.openSearch(needle, requestHandler);
+                    }
+                }
+    });
 };
 
 /**
  * Erzeugt und gibt das Array mit alle deutschen Wörter, die mit 
- * Großbuchstaben im übergebenen Text anfangen, zurück.
+ * Großbuchstaben im übergebenen Text anfangen, zurück und 
+ * entfernt alle Duplikate.
  * 
  * @param {String} text der zu verlinkende Text
  * @returns alle deutschen Wörter, die mit Großbuchstaben anfangen
  */
 WikiLink.prototype.getTokens = function(text){
-    return text.match(/[A-ZÄÖÜ][äöüÄÖÜß\w]+/g);
+    var tokens = text.match(/[A-ZÄÖÜ][äöüÄÖÜß\w]+/g);
+    var uniques = [];
+    
+    for(var i = 0; i < tokens.length; i++){
+        if(uniques.indexOf(tokens[i]) === -1)
+            uniques.push(tokens[i]);
+    }
+    
+    return uniques;
+};
+
+/**
+ * lookUpTokens verarbeitet zunächst alle Suchnadeln in der Datenbank und 
+ * die unreferenzierten Tokens, die übrig bleiben, werden an den handler
+ * weitergereicht.
+ * 
+ * @param {ArrayString} tokens
+ * @param {handler} callback
+ */
+WikiLink.prototype.lookUpTokens = function(tokens, callback){
+    var that = this;
+    
+    var data = {
+        task : 'get_words',
+        tokens : tokens
+    };
+    
+    jQuery.ajax({
+        url: that.controllerPath,
+        data: data,
+        type: 'get',
+        success: 
+                function(jsonedHitsString){
+                    var hits = JSON.parse(jsonedHitsString);
+                    var hit;
+                    var href;
+                    var needle;
+                    var referencedNeedles = new Array();
+                    
+                    for(var index in hits){
+                        hit = hits[index];
+                        href = hit.link;
+                        needle = hit.wort;
+                        
+                        referencedNeedles.push(needle);
+                        
+                        if(hit.anzeige === '1' && href !== ''){
+                            that.replace(needle, that.hrefToLink(href, needle));
+                        }
+                    }
+                    
+                    getComplement(referencedNeedles, tokens);
+                    
+                    if(typeof callback !== 'undefined'){
+                        callback(tokens);
+                    }
+                }
+    });
+};
+
+WikiLink.prototype.hrefToLink = function(href, needle){
+    return '<a target="_new" href="'+href+'">'+needle+'</a>';
+};
+
+function getComplement(subArray, array){
+    var index;
+    for(var i in subArray){
+        index = array.indexOf(subArray[i]);
+        if(index !== -1){
+            array.splice(index, 1);
+        }
+    }
+}
+
+/**
+ * Die Suchnadel wird durch den replace-Wert im Zieltext ersetzt.
+ *  
+ * @param {String} needle ist die zu ersetzende Suchnadel
+ * @param {String} replace der Wert, durch den ersetz wird 
+ * 
+ */
+WikiLink.prototype.replace = function(needle, replace){
+    var textNode;   
+    var linkedText; 
+    jQuery(this.targetSelector).contents().each(function(){//traversiere über die Dom-Struktur vom zu verlinkenden Text
+        if(this.nodeType === 3){                //betrachte nur den Dom-Typ Text, der den nodeTyp 3 ist
+            textNode = jQuery(this);            //mach aus dem aktuellen TextNode ein jQuery Objekt
+            linkedText = textNode.text().replace(new RegExp(needle, 'g'), replace);
+            textNode.replaceWith(linkedText);   //tausche nun im Text die Suchnadel mit dem Link
+        }
+    });
 };
 
 /**
@@ -113,55 +204,34 @@ WikiLink.prototype.identicalApplication = function(response){
         index += 1;
     };
     
-    if(index !== results.length){       //falls ein identischer Treffer existiert
-        var link = '<a target="_new" href="http://de.wikipedia.org/wiki/'+results[index]+'">'+results[index]+'</a>';
-        
-        this.replace(needle, link);  //verlinke den Zieltext
-    } else {
-        //Progress Bar
-        prg_status = prg_status + 1;
-        var progress = (prg_status/prg_length)*100;
-        document.getElementById('prg_bar').style.width = progress + '%';
-        document.getElementById('prg_status_percent').innerHTML = Round2Dec(progress);
-        console.log("Fortschritt : " + progress + "  und Status : " + prg_status + "  und Länge: " + prg_length);
-        if (progress >= 99.99) {
-            document.getElementById('prg_status_percent').innerHTML = 'FINISHED';
-            document.getElementById('prg_bar').style.width = '0%';
-            document.getElementById('prg_bar').innerHTML = 'FINISHED';
-        }
-        //PG Bar Stop
+    if(index !== results.length){//falls ein identischer Treffer existiert
+        //var link = '<a target="_new" href="http://de.wikipedia.org/wiki/'+results[index]+'">'+results[index]+'</a>';
+        var href = this.needleToHref(results[index]);
+        this.cache(needle, href);                             //erfasst den Eintrag in der Datenbank
+        this.replace(needle, this.hrefToLink(href, needle));  //verlinke den Zieltext
+    } else {//sonst erfasse in der Datenbank, dass kein eindeutiges Ergebnid zurückliefert
+        this.cache(needle, '');
     }
 };
 
-/**
- * Die Suchnadel wird durch den replace-Wert im Zieltext ersetzt.
- *  
- * @param {String} needle ist die zu ersetzende Suchnadel
- * @param {String} replace der Wert, durch den ersetz wird 
- * 
- */
-WikiLink.prototype.replace = function(needle, replace){
-    var textNode;   
-    var linkedText; 
-    this.target.contents().each(function(){//traversiere über die Dom-Struktur vom zu verlinkenden Text
-        if(this.nodeType === 3){                //betrachte nur den Dom-Typ Text, der den nodeTyp 3 ist
-            textNode = jQuery(this);            //mach aus dem aktuellen TextNode ein jQuery Objekt
-            linkedText = textNode.text().replace(new RegExp(needle, 'g'), replace);
-            textNode.replaceWith(linkedText);   //tausche nun im Text die Suchnadel mit seinem Link
-        }
+WikiLink.prototype.needleToHref = function(needle){
+    return 'http://de.wikipedia.org/wiki/'+needle;
+};
+
+WikiLink.prototype.cache = function(word, link){
+    var that = this;
+   
+    var data = {
+        task : 'insert_word',
+        word : word,
+        link: link
+    };
+
+    jQuery.ajax({
+        url: that.controllerPath,
+        data: data,
+        type: 'get'
     });
-    //Progress Bar
-    prg_status = prg_status + 1;
-    var progress = (prg_status/prg_length)*100;
-    document.getElementById('prg_bar').style.width = progress + '%';
-    document.getElementById('prg_status_percent').innerHTML = Round2Dec(progress);
-    console.log("Fortschritt : " + progress + "  und Status : " + prg_status + "  und Länge: " + prg_length);
-    if (progress >= 99.99) {
-        document.getElementById('prg_status_percent').innerHTML = 'FINISHED';
-        document.getElementById('prg_bar').style.width = '0%';
-        document.getElementById('prg_bar').innerHTML = 'FINISHED';
-    }
-    //PG Bar Stop
 };
 
 WikiLink.prototype.pushOpenSearchToWikiBox = function(data){
@@ -181,21 +251,14 @@ WikiLink.prototype.pushOpenSearchToWikiBox = function(data){
  */
 WikiLink.prototype.listen = function(){
     var that = this;
+    var source = jQuery(this.sourceSelector);
+    var target = jQuery(this.targetSelector);
     
     jQuery(document).on('click', 'button#validate_text', function(){
-         that.link();
+        var text = source.val();   //den zu verlinkenden Text extrahieren
+        target.html(text);         //füge den rohen Text in die Vorschau ein
+        that.traverse(text);            //verlinke den Vorschautext bezüglich seine Treffer aus der opensearch
     });
-};
-
-WikiLink.prototype.link = function(){
-    var text = this.source.val(); //jQuery('#website_text);//  //den zu verlinkenden Text extrahieren
-    this.target.html(text);         //füge den rohen Text in die Vorschau ein
-    this.traverse(text);            //verlinke den Vorschautext bezüglich seine Treffer aus der opensearch
-};
-
-function Round2Dec(x) { 
-	result = Math.round(x * 100) / 100 ; 
-	return result; 
 };
 
 /**
@@ -230,7 +293,6 @@ Crawler.prototype.crawl = function(url){
         type: 'get',
         success: 
                 function(textNodes){
-                    console.log(textNodes);
                     that.destiny.empty();
                     that.display(JSON.parse(textNodes));
                 }
@@ -243,6 +305,14 @@ Crawler.prototype.display = function(textNodes){
         text =  textNodes[index].text;
         this.destiny.append('<p>'+text+'</p>');
     }
+    /*var text;
+    var ret;
+    for(var index in textNodes){
+        text =  textNodes[index].text;
+        //this.destiny.append('<p>'+text+'</p>');
+        ret += text;
+    }
+    this.destiny.val(ret);*/
 };
 
 Crawler.prototype.listen = function(){
@@ -254,197 +324,21 @@ Crawler.prototype.listen = function(){
     });
 };
 
-var Cacher = function(){
-    Cacher.prototype.memory.push('test');
+var BarProgress = function(){
+    
 };
 
-Cacher.prototype.memory = new Array();
-
-Cacher.prototype.copyMemory = function(){
-    return new Array(Cacher.prototype.memory);
-};
-     
 var Editor = function(editorSelector){
-    this.editor = jQuery(editorSelector);
+    this.editorSelector = editorSelector;
+    this.linker = new WikiLink(editorSelector+' p', editorSelector+' p');
 };
 
 Editor.prototype.listen = function(){
     var that = this;
+    var editor = this.editorSelector;
     
-    var editor = this.editor;
-    
-    editor.click(function(){
-        alert('editor');
-    });
-};
-
-//New Database
-var Database = function(){
-    this.controllerPath = '/controller.php';
-};
-//Teil 1 - Wörter aktivieren
-Database.prototype.word_activate = function(word){
-    var that = this;
-   
-    var data = {
-        task : 'word_activate',
-        word : word
-    };
-    jQuery.ajax({
-        url: that.controllerPath,
-        data: data,
-        type: 'get',
-        success: 
-                function(textNodes){
-                    alert("Update successful");
-                }
-    });
-};
-
-Database.prototype.listen_word_activate = function(){
-    var that = this;  
-    jQuery('#word_active_run').click(function(){
-		
-        var word = jQuery('#word_activate').val();
-        that.word_activate(word);
-    });
-};
-
-//Teil 2 - Wörter deaktivieren
-Database.prototype.word_deactivate = function(word){
-    var that = this;
-   
-    var data = {
-        task : 'word_deactivate',
-        word : word
-    };
-    jQuery.ajax({
-        url: that.controllerPath,
-        data: data,
-        type: 'get',
-        success: 
-                function(textNodes){
-                    alert("Update successful");
-                }
-    });
-};
-
-Database.prototype.listen_word_deactivate = function(){
-    var that = this;  
-    jQuery('#word_deactive_run').click(function(){
-        var word = jQuery('#word_deactivate').val();
-        that.word_deactivate(word);
-    });
-};
-
-//Teil 3 - Benutzer zu Admin machen
-Database.prototype.admin_activate = function(benutzer){
-    var that = this;
-   
-    var data = {
-        task : 'admin_activate',
-        benutzer : benutzer
-    };
-    jQuery.ajax({
-        url: that.controllerPath,
-        data: data,
-        type: 'get',
-        success: 
-                function(textNodes){
-                    alert("User now Admin");
-                }
-    });
-};
-
-Database.prototype.listen_admin_activate = function(){
-    var that = this;  
-    jQuery('#admin_activate_run').click(function(){
-		
-        var benutzer = jQuery('#admin_activate').val();
-        that.admin_activate(benutzer);
-    });
-};
-
-//Teil 4 - Benutzer löschen
-Database.prototype.user_delete = function(benutzer){
-    var that = this;
-   
-    var data = {
-        task : 'user_delete',
-        benutzer : benutzer
-    };
-    jQuery.ajax({
-        url: that.controllerPath,
-        data: data,
-        type: 'get',
-        success: 
-                function(textNodes){
-                    alert("User deleted");
-                }
-    });
-};
-
-Database.prototype.listen_user_delete = function(){
-    var that = this;  
-    jQuery('#user_delete_run').click(function(){
-		
-        var benutzer = jQuery('#user_delete').val();
-        that.user_delete(benutzer);
-    });
-};
-
-//Die meistgesuchten Woerter anzeigen
-Database.prototype.show_common_words = function(){
-    var that = this;
-   
-    var data = {
-        task : 'show_common_words',
-    };
-    jQuery.ajax({
-        url: that.controllerPath,
-        data: data,
-        type: 'get',
-        success: 
-                function(textNodes){
-					jQuery('#common_words').empty();
-					jQuery('#common_words').append('<b>Wort, Anzahl </b><br/>');
-					jQuery('#common_words').append(textNodes);
-					alert("Query finished");
-                }
-    });
-};
-
-Database.prototype.listen_show_common_words = function(){
-    var that = this;  
-    jQuery('#show_common_words_run').click(function(){
-        that.show_common_words();
-    });
-};
-
-//Die aktivsten Benutzer anzeigen
-Database.prototype.show_active_users = function(){
-    var that = this;
-   
-    var data = {
-        task : 'show_active_users',
-    };
-    jQuery.ajax({
-        url: that.controllerPath,
-        data: data,
-        type: 'get',
-        success: 
-                function(textNodes){
-					jQuery('#common_words').empty();
-					jQuery('#common_words').append('<b>Benutzer, Seitenaufrufe </b><br/>');
-					jQuery('#common_words').append(textNodes);
-					alert("Query finished");
-                }
-    });
-};
-
-Database.prototype.listen_show_active_users = function(){
-    var that = this;  
-    jQuery('#show_active_users_run').click(function(){
-        that.show_active_users();
+    jQuery(document).on('click', editor+' p',function(){
+        var linkTarget = jQuery(this);
+        that.linker.traverse(linkTarget.text());
     });
 };

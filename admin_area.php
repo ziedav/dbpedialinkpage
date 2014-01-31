@@ -4,6 +4,7 @@
 	<script src="js/jquery-1.10.1.min.js"></script>
 	<script type="text/javascript" src="js/core.js"></script>
 	<script type="text/javascript" src="js/linkage.js"></script>
+    <script type="text/javascript" src="js/ajax-requests.js"></script>
 	
 	<script type="text/javascript">
     var database = new Database();

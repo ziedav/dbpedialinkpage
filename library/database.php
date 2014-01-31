@@ -15,7 +15,11 @@ class database_helper {
 			mysql_select_db($database,$link);
 		}
 
-	//Übergebe die URL und den User(Falls vorhanden)
+    public function close(){
+        mysql_close($this->link);
+    }
+
+    //Übergebe die URL und den User(Falls vorhanden)
 	public function insert_url($url, $user){
             $query = "INSERT INTO seiten (url,sucher) VALUES ('".$url."','".$user."');";
 			mysql_query($query);
@@ -55,6 +59,39 @@ class database_helper {
 				return "";
 			}
     }
+    
+    public function get_words($tokens){
+        //suche alle Referenzen
+        $query = "SELECT * FROM woerter WHERE (";
+        foreach ($tokens as $token) {
+            $query .= "wort = '".$token."' OR ";
+        }
+        $query = substr($query, 0, count($query)-5).')';
+        $qry = mysql_query($query);
+        $num_rows = mysql_num_rows($qry);
+        
+        $serialize = array();
+        if($num_rows > 0){
+            while ($row = mysql_fetch_object($qry)) {
+                $serialize[] = $row;
+            }
+        }
+        
+        //aufrufe von allen aktualisieren
+        if($num_rows > 0){
+            $query = "UPDATE woerter SET aufrufe = aufrufe + 1 WHERE (";
+            foreach ($tokens as $token) {
+                $query .= "wort = '".$token."' OR ";
+            }
+            $query = substr($query, 0, count($query)-5).')';
+            
+            $qry = mysql_query($query);
+        }
+        
+        //json array zurückgeben
+        return json_encode($serialize);
+    }
+    
 	//Aktiviert ein Wort für die Suche
 	public function word_activate($word) {
 		$query = "UPDATE woerter SET anzeige = 1 WHERE wort = '".$word."';";

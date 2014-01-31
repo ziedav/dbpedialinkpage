@@ -7,7 +7,7 @@
     <table> 
     <tr>
         <td>
-            <textarea style = "resize: none;" rows="20" cols="60" id="test" name="test"></textarea><br/>
+            <textarea style = "resize: none;" rows="20" cols="60" id="test" name="test">Barack Hilary Obama Ann Barack Obama Bill Clinton</textarea><br/>
         </td>
         <td>
             <div id="linked_text"></div>
@@ -38,9 +38,9 @@
 <footer>Web Technologien - Mini Projekt Linkpage - WS 13/14  <a href="login.html" >.</a></footer>
 <script type="text/javascript">
     var linker = new WikiLink('#test','#linked_text');
-    //var linker = new WikiLink('#website_text','#website_text');
     
     var wikiBox = ViewFactory('list', 'wiki_box', 'ul');
+    //var crawler = new Crawler('input#url_input', 'button#crawl_by_url', '#test');
     var crawler = new Crawler('input#url_input', 'button#crawl_by_url', '#website_text');
     var editor = new Editor('#website_text');
     
