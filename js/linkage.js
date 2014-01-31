@@ -10,6 +10,7 @@ var WikiLink = function(sourceSelector, targetSelector){
     this.sourceSelector = sourceSelector;
     this.targetSelector = targetSelector;
     this.head = jQuery('head');
+    this.bar = new ProgressBar();
     
     this.controllerPath = '/controller.php';;
 };
@@ -24,7 +25,7 @@ var WikiLink = function(sourceSelector, targetSelector){
  */
 WikiLink.prototype.traverse = function(text){
     var tokens = this.getTokens(text);
-    
+    this.bar.reset(tokens.length, 0);
     /*for(var index in tokens){
         this.lookUp(tokens[index], 'linker.identicalApplication');
     }*/
@@ -32,11 +33,33 @@ WikiLink.prototype.traverse = function(text){
     var that = this;
     this.lookUpTokens(tokens, function(unReferencedTokens){
         var needle;
+        
+        //that.bar.increment(that.bar.prg_length - unReferencedTokens.length);
         for(var index in unReferencedTokens){
             needle = unReferencedTokens[index];
             that.openSearch(needle, 'linker.identicalApplication');
         }
     });
+};
+
+/**
+ * Erzeugt und gibt das Array mit alle deutschen Wörter, die mit 
+ * Großbuchstaben im übergebenen Text anfangen, zurück und 
+ * entfernt alle Duplikate.
+ * 
+ * @param {String} text der zu verlinkende Text
+ * @returns alle deutschen Wörter, die mit Großbuchstaben anfangen
+ */
+WikiLink.prototype.getTokens = function(text){
+    var tokens = text.match(/[A-ZÄÖÜ][äöüÄÖÜß\w]+/g);
+    var uniques = [];
+    
+    for(var i = 0; i < tokens.length; i++){
+        if(uniques.indexOf(tokens[i]) === -1)
+            uniques.push(tokens[i]);
+    }
+    
+    return uniques;
 };
 
 /**
@@ -66,26 +89,6 @@ WikiLink.prototype.lookUp = function(needle, requestHandler){
                     }
                 }
     });
-};
-
-/**
- * Erzeugt und gibt das Array mit alle deutschen Wörter, die mit 
- * Großbuchstaben im übergebenen Text anfangen, zurück und 
- * entfernt alle Duplikate.
- * 
- * @param {String} text der zu verlinkende Text
- * @returns alle deutschen Wörter, die mit Großbuchstaben anfangen
- */
-WikiLink.prototype.getTokens = function(text){
-    var tokens = text.match(/[A-ZÄÖÜ][äöüÄÖÜß\w]+/g);
-    var uniques = [];
-    
-    for(var i = 0; i < tokens.length; i++){
-        if(uniques.indexOf(tokens[i]) === -1)
-            uniques.push(tokens[i]);
-    }
-    
-    return uniques;
 };
 
 /**
@@ -125,10 +128,12 @@ WikiLink.prototype.lookUpTokens = function(tokens, callback){
                         
                         if(hit.anzeige === '1' && href !== ''){
                             that.replace(needle, that.hrefToLink(href, needle));
+                        } else {
+                            that.bar.increment(1);
                         }
                     }
                     
-                    getComplement(referencedNeedles, tokens);
+                    setToComplement(referencedNeedles, tokens);
                     
                     if(typeof callback !== 'undefined'){
                         callback(tokens);
@@ -141,7 +146,7 @@ WikiLink.prototype.hrefToLink = function(href, needle){
     return '<a target="_new" href="'+href+'">'+needle+'</a>';
 };
 
-function getComplement(subArray, array){
+function setToComplement(subArray, array){
     var index;
     for(var i in subArray){
         index = array.indexOf(subArray[i]);
@@ -168,6 +173,7 @@ WikiLink.prototype.replace = function(needle, replace){
             textNode.replaceWith(linkedText);   //tausche nun im Text die Suchnadel mit dem Link
         }
     });
+    this.bar.increment(1);
 };
 
 /**
@@ -211,6 +217,7 @@ WikiLink.prototype.identicalApplication = function(response){
         this.replace(needle, this.hrefToLink(href, needle));  //verlinke den Zieltext
     } else {//sonst erfasse in der Datenbank, dass kein eindeutiges Ergebnid zurückliefert
         this.cache(needle, '');
+        this.bar.increment(1);
     }
 };
 
@@ -305,14 +312,6 @@ Crawler.prototype.display = function(textNodes){
         text =  textNodes[index].text;
         this.destiny.append('<p>'+text+'</p>');
     }
-    /*var text;
-    var ret;
-    for(var index in textNodes){
-        text =  textNodes[index].text;
-        //this.destiny.append('<p>'+text+'</p>');
-        ret += text;
-    }
-    this.destiny.val(ret);*/
 };
 
 Crawler.prototype.listen = function(){
@@ -324,8 +323,35 @@ Crawler.prototype.listen = function(){
     });
 };
 
-var BarProgress = function(){
+var ProgressBar = function(){
+    this.reset(0, 0);
+};
+
+ProgressBar.prototype.reset = function(prg_length, prg_status){
+    this.prg_length = prg_length;
+    this.prg_status = prg_status;
+    document.getElementById('prg_bar').innerHTML = '';
+};
+
+ProgressBar.prototype.increment = function(status){
+    if(typeof status === 'undefined'){
+        status = 1;
+    }
     
+    this.prg_status = this.prg_status + status;
+    var progress = (this.prg_status/this.prg_length)*100;
+    document.getElementById('prg_bar').style.width = progress + '%';
+    document.getElementById('prg_status_percent').innerHTML = Round2Dec(progress);
+    if (progress >= 99.99) {
+        document.getElementById('prg_status_percent').innerHTML = 'FINISHED';
+        document.getElementById('prg_bar').style.width = '0%';
+        document.getElementById('prg_bar').innerHTML = 'FINISHED';
+    }
+};
+
+function Round2Dec(x) { 
+	var result = Math.round(x * 100)/100; 
+	return result; 
 };
 
 var Editor = function(editorSelector){
