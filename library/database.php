@@ -26,16 +26,16 @@ class database_helper {
     }
 	//Füge ein neues Wort in die Datenbank ein!
 	public function insert_word($word, $link){
-			$query = "SELECT aufrufe FROM woerter WHERE wort = '".$word."';";
+			$query = "SELECT aufrufe FROM woerter WHERE wort = '".utf8_decode($word)."';";
 			$qry = mysql_query($query);
 			$num_rows = mysql_num_rows($qry); 
 			if($num_rows == 0){
-				$query = "INSERT INTO woerter (wort,link) VALUES ('".$word."','".$link."');";
+				$query = "INSERT INTO woerter (wort,link) VALUES ('".utf8_decode($word)."','".utf8_decode($link)."');";
 				mysql_query($query);
 			}
 			else {
 				//Nicht sicher ob das so funktioniert!
-				$query = "UPDATE woerter SET aufrufe = aufrufe + 1 WHERE wort = '".$word."'";
+				$query = "UPDATE woerter SET aufrufe = aufrufe + 1 WHERE wort = '".utf8_decode($word)."'";
 				mysql_query($query);
 			}
     }
