@@ -113,6 +113,7 @@ WikiLink.prototype.lookUpTokens = function(tokens, callback){
         type: 'get',
         success: 
                 function(jsonedHitsString){
+					//console.log(jsonedHitsString);
                     var hits = JSON.parse(jsonedHitsString);
                     var hit;
                     var href;
@@ -277,10 +278,11 @@ WikiLink.prototype.listen = function(){
  * @param {String} destinySelector
  */
 
-var Crawler = function(sourceSelector, triggerSelector, destinySelector){    
+var Crawler = function(sourceSelector, triggerSelector, destinySelector, user_logged){    
     this.source = jQuery(sourceSelector);
     this.trigger = jQuery(triggerSelector);
     this.destiny = jQuery(destinySelector);
+	this.user = user_logged;
     
     this.controllerPath = '/controller.php';
 };
@@ -305,14 +307,38 @@ Crawler.prototype.crawl = function(url){
                 }
     });
 };
+//Schreibe in DB
+Crawler.prototype.writedatabase = function(url){
+    var that = this;
+    var list = this.list;
+   
+    var data = {
+        task : 'insert_url',
+        url : url,
+		user : that.user
+    };
 
+    jQuery.ajax({
+        url: that.controllerPath,
+        data: data,
+        type: 'get',
+        success: 
+                function(textNodes){
+                    console.log(textNodes);
+                }
+    });
+};
+//TODO !!!!!
 Crawler.prototype.display = function(textNodes){
     var text;
+	this.destiny.val('');
     for(var index in textNodes){
         text =  textNodes[index].text;
-        this.destiny.append('<p>'+text+'</p>');
+        //this.destiny.append('<p>'+text+'</p>');
+		this.destiny.val(this.destiny.val()+text); 
     }
 };
+//TODO !!!!
 
 Crawler.prototype.listen = function(){
     var that = this;
@@ -320,6 +346,7 @@ Crawler.prototype.listen = function(){
     this.trigger.click(function(){
         var url = that.source.val();
         that.crawl(url);
+		that.writedatabase(url);
     });
 };
 

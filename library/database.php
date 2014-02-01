@@ -21,7 +21,9 @@ class database_helper {
 
     //Übergebe die URL und den User(Falls vorhanden)
 	public function insert_url($url, $user){
-            $query = "INSERT INTO seiten (url,sucher) VALUES ('".$url."','".$user."');";
+			$subquery = "(SELECT id FROM personen WHERE benutzer = '".$user."')";
+            $query = "INSERT INTO seiten (url,sucher) VALUES ('".$url."',".$subquery.");";
+			//$query = "INSERT INTO seiten (url) VALUES ('".$url."');";
 			mysql_query($query);
     }
 	//Füge ein neues Wort in die Datenbank ein!
@@ -139,6 +141,41 @@ class database_helper {
 			while ($row = mysql_fetch_array($qry, MYSQL_NUM)) {
 				//printf("%s, %s <br/>", $row[0], $row[1]);
 				$result .= "$row[0], $row[1]";
+				$result .= "<br/>";
+			}
+		return $result;
+	}
+	
+	//Zeigt meist betrachtete Internetseiten an
+	public function show_most_viewed_url() {
+		$query = " 	SELECT url, count(*) AS haeufigkeit
+					 FROM Seiten
+					 GROUP BY url
+					 ORDER BY count(*) desc
+					 LIMIT 10;";
+		$qry = mysql_query($query);
+		$result = "";
+			while ($row = mysql_fetch_array($qry, MYSQL_NUM)) {
+				//printf("%s, %s <br/>", $row[0], $row[1]);
+				$result .= "$row[0], $row[1]";
+				$result .= "<br/>";
+			}
+		return $result;
+	}
+	
+	//Zeigt die letzten Seiten des Users an
+	public function show_users_last_url($user) {
+		$subquery = "(SELECT id FROM personen WHERE benutzer = '".$user."')";
+		$query = " 	SELECT url
+					 FROM Seiten
+					 WHERE sucher=".$subquery."
+					 ORDER BY viewDate desc
+					 LIMIT 10;";
+		$qry = mysql_query($query);
+		$result = "";
+			while ($row = mysql_fetch_array($qry, MYSQL_NUM)) {
+				//printf("%s, %s <br/>", $row[0], $row[1]);
+				$result .= "$row[0]";
 				$result .= "<br/>";
 			}
 		return $result;
