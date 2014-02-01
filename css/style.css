@@ -1,3 +1,20 @@
+body {
+    font-family: Calibri;
+    color: #fff;
+    background-image: url('../img/globe.jpg');
+}
+h1 {
+	background-color:#ffff;
+	border-style:solid;
+	    width: 292px;
+}
+h2 {
+	text-decoration:underline;
+
+}
+p {
+	color:#ffff;
+}
 #linked_text{
     width: 600px;
 	height: 320px;

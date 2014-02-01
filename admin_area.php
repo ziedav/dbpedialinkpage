@@ -15,6 +15,7 @@
 		database.listen_user_delete();
 		database.listen_show_common_words();
 		database.listen_show_active_users();
+		database.listen_show_most_viewed_url();
     });
 	</script>
 </head>
@@ -61,5 +62,6 @@ if(isset($_SESSION['user']) && !empty($_SESSION['user'])){
 </table>
 <button id="show_common_words_run">Die h&auml;ufigsten W&ouml;rter anzeigen lassen</button>
 <button id="show_active_users_run">Die aktivsten Nutzer anzeigen lassen</button>
+<button id="show_most_viewed_url_run">Meist betrachteten Internetseiten anzeigen lassen</button>
 <div id="common_words"></div>
 </body>

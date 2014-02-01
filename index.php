@@ -11,6 +11,15 @@
         <script type="text/javascript" src="js/core.js"></script>
         <script type="text/javascript" src="js/linkage.js"></script>
         <script type="text/javascript" src="js/ajax-requests.js"></script>
+		<script type="text/javascript">
+			var database = new Database();
+			jQuery(document).ready(function(){
+				database.listen_show_common_words();
+				database.listen_show_active_users();
+				database.listen_show_most_viewed_url();
+				database.listen_show_users_last_url(logged_user);
+			   });
+		</script>
     </head>
     <body>
     <?php
