@@ -42,7 +42,7 @@ class database_helper {
 			}
     }
 	//Frage ab ob ein Wort in der Datenbank existiert, wenn ja, dann update den Counter
-	public function get_word($word){
+	public function get_word($word){            
             $query = "SELECT * FROM woerter WHERE wort = '".$word."';";
 			$qry = mysql_query($query);
 			//Wenn Ergebnis > 1 dann Ergebnis gefunden
@@ -69,6 +69,7 @@ class database_helper {
             $query .= "wort = '".$token."' OR ";
         }
         $query = substr($query, 0, count($query)-5).')';
+        
         $qry = mysql_query($query);
         $num_rows = mysql_num_rows($qry);
         
@@ -89,7 +90,7 @@ class database_helper {
             
             $qry = mysql_query($query);
         }
-        
+         print_r(json_encode($serialize));exit;
         //json array zurückgeben
         return json_encode($serialize);
     }

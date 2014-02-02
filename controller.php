@@ -17,8 +17,7 @@
            echo $database->get_words($_REQUEST['tokens']);
            //$database->close();
         }
-
-
+        
         if($_REQUEST['task'] === 'get_word'){
             $database = new database_helper();
             echo $database->get_word($_REQUEST['word']);
@@ -73,13 +72,13 @@
             //$database->close();
         }
 		if($_REQUEST['task'] === 'show_most_viewed_url'){
-        $database = new database_helper();
-        echo $database->show_most_viewed_url();
+            $database = new database_helper();
+            echo $database->show_most_viewed_url();
 		}
 		
 		if($_REQUEST['task'] === 'show_users_last_url'){
-        $database = new database_helper();
-        echo $database->show_users_last_url($_REQUEST['user']);
+            $database = new database_helper();
+            echo $database->show_users_last_url($_REQUEST['user']);
 		}
     }
 ?>

@@ -11,7 +11,7 @@ var WikiLink = function(sourceSelector, targetSelector){
     this.targetSelector = targetSelector;
     this.head = jQuery('head');
     this.bar = new ProgressBar();
-    
+       
     this.controllerPath = '/controller.php';;
 };
 
@@ -113,7 +113,6 @@ WikiLink.prototype.lookUpTokens = function(tokens, callback){
         type: 'get',
         success: 
                 function(jsonedHitsString){
-					//console.log(jsonedHitsString);
                     var hits = JSON.parse(jsonedHitsString);
                     var hit;
                     var href;
@@ -211,28 +210,30 @@ WikiLink.prototype.identicalApplication = function(response){
         index += 1;
     };
     
+    var href;
     if(index !== results.length){//falls ein identischer Treffer existiert
         //var link = '<a target="_new" href="http://de.wikipedia.org/wiki/'+results[index]+'">'+results[index]+'</a>';
-        var href = this.needleToHref(results[index]);
-        this.cache(needle, href);                             //erfasst den Eintrag in der Datenbank
+        href = this.needleToHref(results[index]);
         this.replace(needle, this.hrefToLink(href, needle));  //verlinke den Zieltext
     } else {//sonst erfasse in der Datenbank, dass kein eindeutiges Ergebnid zurückliefert
-        this.cache(needle, '');
+        href = '';
         this.bar.increment(1);
     }
+    
+    this.cache(needle, href);
 };
 
 WikiLink.prototype.needleToHref = function(needle){
     return 'http://de.wikipedia.org/wiki/'+needle;
 };
 
-WikiLink.prototype.cache = function(word, link){
+WikiLink.prototype.cache = function(word, href){
     var that = this;
    
     var data = {
         task : 'insert_word',
         word : word,
-        link: link
+        link: href
     };
 
     jQuery.ajax({
