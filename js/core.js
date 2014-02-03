@@ -179,6 +179,12 @@ ViewList.prototype.display = function(start, end){
     
     var wrapper = this.frame.getQuery();
     
+    if(this.items.length === 0){
+        this.hide();
+    } else {
+        this.show();
+    }
+    
     for(var i = start; i < end; i += 1){
         wrapper.append(this.item.toHtml(this.items[i]));
     }

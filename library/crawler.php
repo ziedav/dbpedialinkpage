@@ -23,7 +23,7 @@
             parent::__construct();
         }
         
-        public function getTextNodes($doc, $minLength = 200){
+        public function getTextNodes($doc, $isWiki, $minLength = 200){
             $path = new DOMXpath($doc);
             //$textNodes = $path->query('//text()');
             $textNodes = $path->query('//body//p');
@@ -31,7 +31,11 @@
             foreach ($textNodes as $node){
                 if(strlen($node->nodeValue) >= $minLength){
                     //$result[] = $this->decode($node->nodeValue);
-                    $result[] = $node->nodeValue;
+                    if($isWiki){
+                        $result[] = $this->decode($node->nodeValue);
+                    } else {
+                        $result[] = $node->nodeValue;
+                    }
                 }
             }
             

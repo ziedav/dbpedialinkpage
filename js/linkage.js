@@ -10,9 +10,9 @@ var WikiLink = function(sourceSelector, targetSelector){
     this.sourceSelector = sourceSelector;
     this.targetSelector = targetSelector;
     this.head = jQuery('head');
+    this.tokenStream = new TokenStream();
+    this.controllerPath = '/controller.php';
     this.bar = new ProgressBar();
-       
-    this.controllerPath = '/controller.php';;
 };
 
 /**
@@ -24,71 +24,32 @@ var WikiLink = function(sourceSelector, targetSelector){
  * @returns {undefined}
  */
 WikiLink.prototype.traverse = function(text){
-    var tokens = this.getTokens(text);
-    this.bar.reset(tokens.length, 0);
-    /*for(var index in tokens){
-        this.lookUp(tokens[index], 'linker.identicalApplication');
-    }*/
+    //wir beschränken uns auf maximal vier nacheinander 
+    //geschriebenen großgeschriebenen Wörter im Text
+    var tokensCollection = this.tokenStream.stream(text);
+    var tokens;
     
-    var that = this;
-    this.lookUpTokens(tokens, function(unReferencedTokens){
-        var needle;
-        
-        //that.bar.increment(that.bar.prg_length - unReferencedTokens.length);
-        for(var index in unReferencedTokens){
-            needle = unReferencedTokens[index];
-            that.openSearch(needle, 'linker.identicalApplication');
-        }
-    });
-};
-
-/**
- * Erzeugt und gibt das Array mit alle deutschen Wörter, die mit 
- * Großbuchstaben im übergebenen Text anfangen, zurück und 
- * entfernt alle Duplikate.
- * 
- * @param {String} text der zu verlinkende Text
- * @returns alle deutschen Wörter, die mit Großbuchstaben anfangen
- */
-WikiLink.prototype.getTokens = function(text){
-    var tokens = text.match(/[A-ZÄÖÜ][äöüÄÖÜß\w]+/g);
-    var uniques = [];
+    //reset progress bar
+    var amountOfNeedles = 0;
     
-    for(var i = 0; i < tokens.length; i++){
-        if(uniques.indexOf(tokens[i]) === -1)
-            uniques.push(tokens[i]);
+    for(var index in tokensCollection){
+        tokens = tokensCollection[index];
+        amountOfNeedles += tokens.length;
     }
+    this.bar.reset(amountOfNeedles, 0);
     
-    return uniques;
-};
-
-/**
- * lookUp bearbeitet nur eine Suchnadel
- *  
- * @param {String} needle
- * @param {handler} requestHandler
- */
-WikiLink.prototype.lookUp = function(needle, requestHandler){
+    //lookUp for needles
     var that = this;
-    
-    var data = {
-        task : 'get_word',
-        word : needle
-    };
-    
-    jQuery.ajax({
-        url: that.controllerPath,
-        data: data,
-        type: 'get',
-        success: 
-                function(href){
-                    if(href !== ''){
-                        that.replace(needle, that.hrefToLink(href, needle));
-                    } else {
-                        that.openSearch(needle, requestHandler);
-                    }
-                }
-    });
+    for(var index in tokensCollection){
+        tokens = tokensCollection[index];
+        this.lookUpTokens(tokens, function(unReferencedTokens){
+            var needle;
+            for(var index in unReferencedTokens){
+                needle = unReferencedTokens[index];
+                that.openSearch(needle, 'linker.identicalApplication');
+            }
+        });
+    }
 };
 
 /**
@@ -97,9 +58,9 @@ WikiLink.prototype.lookUp = function(needle, requestHandler){
  * weitergereicht.
  * 
  * @param {ArrayString} tokens
- * @param {handler} callback
+ * @param {handler} handler
  */
-WikiLink.prototype.lookUpTokens = function(tokens, callback){
+WikiLink.prototype.lookUpTokens = function(tokens, handler){
     var that = this;
     
     var data = {
@@ -116,6 +77,7 @@ WikiLink.prototype.lookUpTokens = function(tokens, callback){
                     var hits = JSON.parse(jsonedHitsString);
                     var hit;
                     var href;
+                    var counter;
                     var needle;
                     var referencedNeedles = new Array();
                     
@@ -123,30 +85,35 @@ WikiLink.prototype.lookUpTokens = function(tokens, callback){
                         hit = hits[index];
                         href = hit.link;
                         needle = hit.wort;
-                        
+                        counter = parseInt(hit.aufrufe)+1;
                         referencedNeedles.push(needle);
                         
                         if(hit.anzeige === '1' && href !== ''){
-                            that.replace(needle, that.hrefToLink(href, needle));
+                            that.replace(needle, that.hrefToLink(href, needle, counter+' Aufrufe'));
                         } else {
                             that.bar.increment(1);
                         }
                     }
                     
-                    setToComplement(referencedNeedles, tokens);
-                    
-                    if(typeof callback !== 'undefined'){
-                        callback(tokens);
+                    if(typeof handler !== 'undefined'){
+                        complement(referencedNeedles, tokens);
+                        handler(tokens);
                     }
                 }
     });
 };
 
-WikiLink.prototype.hrefToLink = function(href, needle){
-    return '<a target="_new" href="'+href+'">'+needle+'</a>';
+WikiLink.prototype.hrefToLink = function(href, needle, title){
+    if(typeof title !== 'string'){
+        title = '';
+    } else {
+         title = 'title="'+title+'"';
+    }
+    
+    return '<a target="_new" '+title+' href="'+href+'">'+needle+'</a>';
 };
 
-function setToComplement(subArray, array){
+function complement(subArray, array){
     var index;
     for(var i in subArray){
         index = array.indexOf(subArray[i]);
@@ -164,13 +131,18 @@ function setToComplement(subArray, array){
  * 
  */
 WikiLink.prototype.replace = function(needle, replace){
-    var textNode;   
+    var textNode;
     var linkedText; 
+    
     jQuery(this.targetSelector).contents().each(function(){//traversiere über die Dom-Struktur vom zu verlinkenden Text
-        if(this.nodeType === 3){                //betrachte nur den Dom-Typ Text, der den nodeTyp 3 ist
-            textNode = jQuery(this);            //mach aus dem aktuellen TextNode ein jQuery Objekt
-            linkedText = textNode.text().replace(new RegExp(needle, 'g'), replace);
-            textNode.replaceWith(linkedText);   //tausche nun im Text die Suchnadel mit dem Link
+        if(this.nodeType === 1){                        //betrachte nur den Dom-Typ p, der den nodeTyp 1 hat
+            jQuery(this).contents().each(function(){    // a tags nicht tangieren deshalb direkt uaf textNodes zugreifen
+                if(this.nodeType === 3){
+                    textNode = jQuery(this);            //mach aus dem aktuellen TextNode ein jQuery Objekt
+                    linkedText = textNode.text().replace(new RegExp(needle, 'g'), replace);
+                    textNode.replaceWith(linkedText);   //tausche nun im Text die Suchnadel mit dem Link
+                }
+            });
         }
     });
     this.bar.increment(1);
@@ -227,6 +199,13 @@ WikiLink.prototype.needleToHref = function(needle){
     return 'http://de.wikipedia.org/wiki/'+needle;
 };
 
+/**
+ * deprecated but still in use
+ * 
+ * @param {type} word
+ * @param {type} href
+ * @returns {undefined}
+ */
 WikiLink.prototype.cache = function(word, href){
     var that = this;
    
@@ -261,93 +240,10 @@ WikiLink.prototype.pushOpenSearchToWikiBox = function(data){
 WikiLink.prototype.listen = function(){
     var that = this;
     var source = jQuery(this.sourceSelector);
-    var target = jQuery(this.targetSelector);
     
     jQuery(document).on('click', 'button#validate_text', function(){
-        var text = source.val();   //den zu verlinkenden Text extrahieren
-        target.html(text);         //füge den rohen Text in die Vorschau ein
+        var text = source.contents().text();   //den zu verlinkenden Text extrahieren
         that.traverse(text);            //verlinke den Vorschautext bezüglich seine Treffer aus der opensearch
-    });
-};
-
-/**
- * Crawler stellt Funktion für das Traversieren der Webseite der übergebenen Url bereit.
- * Und übergibt die gefundenen Text-Nodes an WikiLink.
- * 
- * @param {String} sourceSelector
- * @param {String} triggerSelector
- * @param {String} destinySelector
- */
-
-var Crawler = function(sourceSelector, triggerSelector, destinySelector, user_logged){    
-    this.source = jQuery(sourceSelector);
-    this.trigger = jQuery(triggerSelector);
-    this.destiny = jQuery(destinySelector);
-	this.user = user_logged;
-    
-    this.controllerPath = '/controller.php';
-};
-
-Crawler.prototype.crawl = function(url){
-    var that = this;
-    var list = this.list;
-   
-    var data = {
-        task : 'crawl',
-        url : url
-    };
-
-    jQuery.ajax({
-        url: that.controllerPath,
-        data: data,
-        type: 'get',
-        success: 
-                function(textNodes){
-                    that.destiny.empty();
-                    that.display(JSON.parse(textNodes));
-                }
-    });
-};
-//Schreibe in DB
-Crawler.prototype.writedatabase = function(url){
-    var that = this;
-    var list = this.list;
-   
-    var data = {
-        task : 'insert_url',
-        url : url,
-		user : that.user
-    };
-
-    jQuery.ajax({
-        url: that.controllerPath,
-        data: data,
-        type: 'get',
-        success: 
-                function(textNodes){
-                    console.log(textNodes);
-                }
-    });
-};
-//TODO !!!!!
-Crawler.prototype.display = function(textNodes){
-    var text;
-	this.destiny.val('');
-    for(var index in textNodes){
-        text =  textNodes[index].text;
-        //this.destiny.append('<p>'+text+'</p>');
-		this.destiny.val(this.destiny.val()+text); 
-    }
-};
-//TODO !!!!
-
-Crawler.prototype.listen = function(){
-    var that = this;
-    
-    this.trigger.click(function(){
-        var url = that.source.val();
-        that.crawl(url);
-		that.writedatabase(url);
     });
 };
 
@@ -373,7 +269,6 @@ ProgressBar.prototype.increment = function(status){
     if (progress >= 99.99) {
         document.getElementById('prg_status_percent').innerHTML = 'FINISHED';
         document.getElementById('prg_bar').style.width = '0%';
-        document.getElementById('prg_bar').innerHTML = 'FINISHED';
     }
 };
 
@@ -382,17 +277,139 @@ function Round2Dec(x) {
 	return result; 
 };
 
-var Editor = function(editorSelector){
-    this.editorSelector = editorSelector;
-    this.linker = new WikiLink(editorSelector+' p', editorSelector+' p');
+var Editor = function(destinySelector){
+    this.destiny = jQuery(destinySelector);
+    this.pages = new Array();
+    
+    this.crawler = new Crawler('#url_input', 'button#crawl_by_url', logged_user);
+};
+
+Editor.prototype.display = function(pageIndex){
+	this.destiny.empty();
+    this.displayedPage = pageIndex;
+    jQuery('b#page_number').html(this.displayedPage+1);
+    var page = this.pages[pageIndex];
+    
+    var pContent;
+    for(var index in page){
+        pContent = page[index];
+        this.destiny.append('<p>'+pContent+'</p>');
+    }
+};
+
+Editor.prototype.saveTemporary = function(){
+    this.pages[this.displayedPage] = new Array();
+    var that = this;
+    this.destiny.contents().each(function(){
+         that.pages[that.displayedPage].push(jQuery(this).html());
+    });
 };
 
 Editor.prototype.listen = function(){
-    var that = this;
-    var editor = this.editorSelector;
+    this.crawler.listen();
     
-    jQuery(document).on('click', editor+' p',function(){
-        var linkTarget = jQuery(this);
-        that.linker.traverse(linkTarget.text());
+    var that = this;
+    var next;
+    jQuery('#next').click(function(){
+        var next = that.displayedPage+1;
+        if(next === that.pages.length){
+            next = 0;
+        }
+        that.saveTemporary();
+        that.display(next);
+    });
+    
+    var back;
+    jQuery('#back').click(function(){
+        var back = that.displayedPage-1;
+        if(back === -1){
+            back = that.pages.length-1;
+        }
+        that.saveTemporary();
+        that.display(back);
+    });
+};
+
+/**
+ * Crawler stellt Funktion für das Traversieren der Webseite der übergebenen Url bereit.
+ * Und übergibt die gefundenen Text-Nodes an WikiLink.
+ * 
+ * @param {String} sourceSelector
+ * @param {String} triggerSelector
+ * @param {String} destinySelector
+ */
+
+var Crawler = function(sourceSelector, triggerSelector, user_logged){    
+    this.source = jQuery(sourceSelector);
+    this.trigger = jQuery(triggerSelector);
+	this.user = user_logged;
+    
+    this.controllerPath = '/controller.php';
+};
+
+Crawler.prototype.crawl = function(url){
+    var that = this;
+    var list = this.list;
+   
+    var data = {
+        task : 'crawl',
+        url : url
+    };
+    
+    jQuery.ajax({
+        url: that.controllerPath,
+        data: data,
+        type: 'get',
+        success: 
+                function(textNodes){
+                    editor.pages = new Array();
+                    textNodes = JSON.parse(textNodes);
+                    
+                    var text;
+                    var page = new Array();
+                    for(var index in textNodes){
+                        text =  textNodes[index].text;
+                        page.push(text);
+                        if(page.length > 9){
+                            editor.pages.push(page);
+                            page = new Array();
+                        }
+                    }
+                    
+                    if(page.length > 0){
+                        editor.pages.push(page);
+                    }
+                    
+                    editor.display(0);
+                    jQuery('b#page_numbers').html(editor.pages.length);
+                }
+    });
+};
+
+//Schreibe in DB
+Crawler.prototype.writedatabase = function(url){
+    var that = this;
+    var list = this.list;
+   
+    var data = {
+        task : 'insert_url',
+        url : url,
+		user : that.user
+    };
+
+    jQuery.ajax({
+        url: that.controllerPath,
+        data: data,
+        type: 'get'
+    });
+};
+
+Crawler.prototype.listen = function(){
+    var that = this;
+    
+    this.trigger.click(function(){
+        var url = that.source.val();
+        that.crawl(url);
+		that.writedatabase(url);
     });
 };

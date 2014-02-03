@@ -9,6 +9,7 @@
         <link rel="stylesheet" type="text/css" href="css/style.css"></link>
         <script type="text/javascript" src="js/jquery-1.10.1.min.js"></script>
         <script type="text/javascript" src="js/core.js"></script>
+        <script type="text/javascript" src="js/token-stream.js"></script>
         <script type="text/javascript" src="js/linkage.js"></script>
         <script type="text/javascript" src="js/ajax-requests.js"></script>
 		<script type="text/javascript">

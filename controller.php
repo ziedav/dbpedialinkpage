@@ -7,7 +7,9 @@
         if($_REQUEST['task'] === 'crawl'){
             $crawler = new WikiCrawler();
             $document = $crawler->getPageDocument($_REQUEST['url'], 'name');
-            $textNodes = $crawler->getTextNodes($document);
+            
+            $isWikipedia = strpos($_REQUEST['url'], 'de.wikipedia.org');
+            $textNodes = $crawler->getTextNodes($document, $isWikipedia);
 
             echo $crawler->serialize($textNodes);
         }
